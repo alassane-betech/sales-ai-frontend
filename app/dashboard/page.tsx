@@ -70,9 +70,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-white/5 backdrop-blur-md border-r border-white/10 flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex overflow-hidden">
+      {/* Sidebar - Fixed height, always visible */}
+      <div className="w-80 bg-white/5 backdrop-blur-md border-r border-white/10 flex flex-col h-screen">
         {/* Logo */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center space-x-3">
@@ -85,7 +85,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* Navigation - Fixed height */}
         <nav className="flex-1 p-6">
           <div className="space-y-2">
             {navigationItems.map((item) => {
@@ -136,8 +136,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1">
+      {/* Main Content Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
