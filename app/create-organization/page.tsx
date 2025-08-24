@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import CreateOrganization from "@/components/auth/create-organization";
+import CreateOrganization from "@/components/create-organization/create-organization";
 import { isAuthenticated } from "@/lib/auth";
 
 export default function CreateOrganizationPage() {
@@ -14,10 +14,10 @@ export default function CreateOrganizationPage() {
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
     if (!isAuthenticated()) {
-      router.push("/auth?mode=signin");
+      router.push("/auth");
       return;
     }
-  }, [router]);
+  }, []);
 
   const handleSuccess = () => {
     // Rediriger vers le dashboard après création réussie
@@ -69,7 +69,7 @@ export default function CreateOrganizationPage() {
           </div>
 
           {/* Create Organization Form */}
-          <CreateOrganization email="" onSuccess={handleSuccess} />
+          <CreateOrganization onSuccess={handleSuccess} />
         </motion.div>
       </div>
     </div>

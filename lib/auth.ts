@@ -96,7 +96,7 @@ export const getUser = (): User | null => {
 
 // Fonction pour vérifier si l'utilisateur est connecté
 export const isAuthenticated = (): boolean => {
-  return !!getAccessToken();
+  return !!getAccessToken() && !!getRefreshToken();
 };
 
 // Configuration d'axios pour inclure automatiquement le token d'accès

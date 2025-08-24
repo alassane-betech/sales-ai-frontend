@@ -7,12 +7,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 interface CreateOrganizationProps {
-  email: string;
   onSuccess: () => void;
 }
 
 export default function CreateOrganization({
-  email,
   onSuccess,
 }: CreateOrganizationProps) {
   const [formData, setFormData] = useState({
@@ -60,7 +58,7 @@ export default function CreateOrganization({
         },
         {
           headers: {
-            Authorization: `Bearer ${Cookies.get("access_token") || ""}`,
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
           },
         }
       );

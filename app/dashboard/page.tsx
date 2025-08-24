@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { isAuthenticated } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -64,6 +66,13 @@ const navigationItems = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/auth");
+    }
+  }, [router]);
 
   const handleLogout = () => {
     logout();
