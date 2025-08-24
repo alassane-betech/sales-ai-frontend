@@ -9,6 +9,7 @@ import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
 import { isAuthenticated } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -34,6 +35,13 @@ export default function AuthPage() {
     // Hide forgot password view when switching modes
     setIsForgotVisible(false);
   }, [mode]);
+
+  useEffect(() => {
+    const reset = searchParams.get("reset");
+    if (reset === "success") {
+      toast.success("Mot de passe mis à jour. Vous pouvez vous connecter.");
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center p-4">
