@@ -45,7 +45,7 @@ export default function OTPVerification({
       );
 
       if (response.status === 200) {
-        Cookies.set("access_token", response.data.token);
+        Cookies.set("access_token", response.data.access_token);
         Cookies.set("refresh_token", response.data.refresh_token);
         Cookies.set("user", JSON.stringify(response.data.user));
 
