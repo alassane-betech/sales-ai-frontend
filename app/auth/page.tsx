@@ -5,11 +5,10 @@ import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
 import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
-import { login, setupAxiosInterceptors, isAuthenticated } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -19,20 +18,10 @@ export default function AuthPage() {
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
-  const [authError, setAuthError] = useState("");
+  const [isForgotVisible, setIsForgotVisible] = useState(false);
 
-  // Form states
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  // Validation states
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Email used for OTP and header context only
+  const [otpEmail, setOtpEmail] = useState("");
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -42,135 +31,9 @@ export default function AuthPage() {
     }
 
     setIsSignIn(mode === "signin");
-    // Clear auth error when switching modes
-    setAuthError("");
+    // Hide forgot password view when switching modes
+    setIsForgotVisible(false);
   }, [mode]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-    // Clear auth error when user starts typing
-    if (authError) {
-      setAuthError("");
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (isSignIn) {
-      if (!formData.email) newErrors.email = "Email is required";
-      if (!formData.password) newErrors.password = "Password is required";
-    } else {
-      if (!formData.firstName) newErrors.firstName = "First name is required";
-      if (!formData.lastName) newErrors.lastName = "Last name is required";
-      if (!formData.email) newErrors.email = "Email is required";
-      if (!formData.phone) newErrors.phone = "Phone number is required";
-      if (!formData.password) newErrors.password = "Password is required";
-      if (!formData.confirmPassword)
-        newErrors.confirmPassword = "Please confirm your password";
-      if (
-        formData.password &&
-        formData.confirmPassword &&
-        formData.password !== formData.confirmPassword
-      ) {
-        newErrors.confirmPassword = "Passwords do not match";
-      }
-      if (formData.password && formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    setAuthError(""); // Clear previous errors
-
-    try {
-      if (isSignIn) {
-        // Appel de l'API de connexion
-        try {
-          await login(formData.email, formData.password);
-
-          // Configuration des intercepteurs axios pour les futures requêtes
-          setupAxiosInterceptors();
-
-          // Redirection vers le dashboard après connexion réussie
-          window.location.href = "/dashboard";
-        } catch (error: any) {
-          if (error.response) {
-            // Le serveur a répondu avec une erreur
-            console.error("Connexion échouée:", error.response.data);
-
-            // Gestion des différents codes d'erreur
-            if (error.response.status === 401) {
-              setAuthError("Email ou mot de passe incorrect");
-            } else if (error.response.status === 400) {
-              setAuthError("Données de connexion invalides");
-            } else if (error.response.status === 500) {
-              setAuthError("Erreur serveur. Veuillez réessayer plus tard");
-            } else {
-              setAuthError("Erreur de connexion. Veuillez réessayer");
-            }
-          } else if (error.request) {
-            // La requête a été faite mais aucune réponse reçue
-            console.error("Erreur réseau:", error.request);
-            setAuthError(
-              "Erreur de connexion au serveur. Vérifiez votre connexion internet"
-            );
-          } else {
-            // Autre chose s'est passé
-            console.error("Erreur:", error.message);
-            setAuthError("Une erreur inattendue s'est produite");
-          }
-        }
-      } else {
-        // Registration API call
-        try {
-          const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-            {
-              email: formData.email,
-              password: formData.password,
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              phone_number: formData.phone,
-            }
-          );
-
-          // Success - show OTP verification
-          setShowOTP(true);
-        } catch (error: any) {
-          if (error.response) {
-            // Server responded with error status
-            console.error("Registration failed:", error.response.data);
-          } else if (error.request) {
-            // Request was made but no response received
-            console.error("Network error:", error.request);
-          } else {
-            // Something else happened
-            console.error("Error:", error.message);
-          }
-          // Handle error - you can add error state here if needed
-        }
-      }
-    } catch (error) {
-      console.error("API call failed:", error);
-      // Handle network error - you can add error state here if needed
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center p-4">
@@ -219,44 +82,45 @@ export default function AuthPage() {
               {showOTP
                 ? "Verify Your Email"
                 : isSignIn
-                ? "Welcome back"
+                ? isForgotVisible
+                  ? "Réinitialiser le mot de passe"
+                  : "Welcome back"
                 : "Start your free trial"}
             </h1>
-            <p className="text-gray-400">
-              {showOTP
-                ? `We've sent a 6-digit code to ${formData.email}`
-                : isSignIn
-                ? "Sign in to your account to continue"
-                : "Get started with AI-powered sales automation"}
-            </p>
+            {showOTP ? (
+              <p className="text-gray-400">{`We've sent a 6-digit code to ${otpEmail}`}</p>
+            ) : isSignIn ? (
+              isForgotVisible ? (
+                <p className="text-gray-400">
+                  Entrez votre email pour recevoir un lien de réinitialisation
+                </p>
+              ) : (
+                <p className="text-gray-400">
+                  Sign in to your account to continue
+                </p>
+              )
+            ) : (
+              <p className="text-gray-400">
+                Get started with AI-powered sales automation
+              </p>
+            )}
           </div>
 
           {/* Form or OTP */}
           {!showOTP ? (
             isSignIn ? (
-              <SignInForm
-                formData={{
-                  email: formData.email,
-                  password: formData.password,
-                }}
-                errors={errors}
-                isLoading={isLoading}
-                authError={authError}
-                onInputChange={handleInputChange}
-                onSubmit={handleSubmit}
-              />
+              <SignInForm onForgotVisibleChange={setIsForgotVisible} />
             ) : (
               <SignUpForm
-                formData={formData}
-                errors={errors}
-                isLoading={isLoading}
-                onInputChange={handleInputChange}
-                onSubmit={handleSubmit}
+                onStartOtp={(email) => {
+                  setOtpEmail(email);
+                  setShowOTP(true);
+                }}
               />
             )
           ) : (
             <OTPVerification
-              email={formData.email}
+              email={otpEmail}
               otp={otp}
               otpError={otpError}
               isLoading={isLoading}
