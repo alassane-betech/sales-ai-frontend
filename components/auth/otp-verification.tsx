@@ -45,13 +45,12 @@ export default function OTPVerification({
       );
 
       if (response.status === 200) {
-        // Save token to cookies if provided in response
-        if (response.data.token) {
-          Cookies.set("auth_token", response.data.token, { expires: 7 }); // Expires in 7 days
-        }
+        Cookies.set("access_token", response.data.token);
+        Cookies.set("refresh_token", response.data.refresh_token);
+        Cookies.set("user", JSON.stringify(response.data.user));
 
-        // Redirect to dashboard
-        window.location.href = "/dashboard";
+        // Redirect to create organization page
+        window.location.href = "/create-organization";
       }
     } catch (error: any) {
       if (error.response) {

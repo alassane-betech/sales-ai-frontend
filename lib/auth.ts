@@ -26,16 +26,12 @@ interface User {
 
 // Configuration des cookies
 const COOKIE_OPTIONS = {
-  expires: 7, // 7 jours (js-cookie utilise 'expires' au lieu de 'maxAge')
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
 };
 
 // Configuration des cookies pour les données utilisateur
 const USER_COOKIE_OPTIONS = {
-  expires: 30, // 30 jours
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
 };
 
 // Fonction de connexion
@@ -135,8 +131,9 @@ export const setupAxiosInterceptors = () => {
               refresh_token: refreshToken,
             });
 
-            const { access_token } = response.data;
+            const { access_token, refresh_token } = response.data;
             Cookies.set("access_token", access_token, COOKIE_OPTIONS);
+            Cookies.set("refresh_token", refresh_token, COOKIE_OPTIONS);
 
             // Retenter la requête originale avec le nouveau token
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
