@@ -17,42 +17,38 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/auth", req.url));
     }
 
-    // En production : vérification et refresh automatique des tokens
-    if (process.env.NODE_ENV === "production") {
-      try {
-        // Tenter de rafraîchir le token
-        const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refresh_token: refreshToken,
-        });
+    // Vérification et refresh automatique des tokens
+    try {
+      // Tenter de rafraîchir le token
+      const refreshRes = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+        refresh_token: refreshToken,
+      });
 
-        // Refresh réussi → mettre à jour les cookies
-        const data = refreshRes.data;
-        const response = NextResponse.next();
+      // Refresh réussi → mettre à jour les cookies
+      const data = refreshRes.data;
+      const response = NextResponse.next();
 
-        response.cookies.set("access_token", data.access_token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-        });
+      response.cookies.set("access_token", data.access_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
 
-        response.cookies.set("refresh_token", data.refresh_token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-        });
+      response.cookies.set("refresh_token", data.refresh_token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
 
-        return response;
-      } catch {
-        // En cas d'erreur → rediriger vers /auth
-        const response = NextResponse.redirect(new URL("/auth", req.url));
-        response.cookies.delete("access_token");
-        response.cookies.delete("refresh_token");
-        response.cookies.delete("user");
-        return response;
-      }
+      return response;
+    } catch {
+      // En cas d'erreur → rediriger vers /auth
+      const response = NextResponse.redirect(new URL("/auth", req.url));
+      response.cookies.delete("access_token");
+      response.cookies.delete("refresh_token");
+      response.cookies.delete("user");
+      return response;
     }
-
-    return NextResponse.next();
   }
 
   return NextResponse.next();

@@ -9,7 +9,7 @@ import axios from "axios";
 import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
-import { login, setupAxiosInterceptors } from "@/lib/auth";
+import { login, setupAxiosInterceptors, isAuthenticated } from "@/lib/auth";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -35,6 +35,12 @@ export default function AuthPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    // Vérifier si l'utilisateur est déjà connecté
+    if (isAuthenticated()) {
+      window.location.href = "/dashboard";
+      return;
+    }
+
     setIsSignIn(mode === "signin");
     // Clear auth error when switching modes
     setAuthError("");
