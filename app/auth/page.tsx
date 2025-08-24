@@ -9,6 +9,7 @@ import axios from "axios";
 import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
+import { login, setupAxiosInterceptors } from "@/lib/auth";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -83,10 +84,28 @@ export default function AuthPage() {
 
     try {
       if (isSignIn) {
-        // TODO: Implement sign-in API call
-        console.log("Sign in:", formData);
-        // Redirect to dashboard after successful sign-in
-        window.location.href = "/dashboard";
+        // Appel de l'API de connexion
+        try {
+          await login(formData.email, formData.password);
+
+          // Configuration des intercepteurs axios pour les futures requêtes
+          setupAxiosInterceptors();
+
+          // Redirection vers le dashboard après connexion réussie
+          window.location.href = "/dashboard";
+        } catch (error: any) {
+          if (error.response) {
+            // Le serveur a répondu avec une erreur
+            console.error("Connexion échouée:", error.response.data);
+            // Vous pouvez ajouter un état d'erreur ici si nécessaire
+          } else if (error.request) {
+            // La requête a été faite mais aucune réponse reçue
+            console.error("Erreur réseau:", error.request);
+          } else {
+            // Autre chose s'est passé
+            console.error("Erreur:", error.message);
+          }
+        }
       } else {
         // Registration API call
         try {

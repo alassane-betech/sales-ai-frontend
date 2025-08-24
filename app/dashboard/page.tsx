@@ -1,63 +1,67 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  Settings, 
-  Video, 
-  UserCheck
-} from 'lucide-react'
-import LeadsView from '@/components/leads-view'
-import OverviewView from '@/components/overview-view'
-import CalendarView from '@/components/calendar-view'
-import MeetingsView from '@/components/meetings-view'
-import TeamView from '@/components/team-view'
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  Settings,
+  Video,
+  UserCheck,
+} from "lucide-react";
+import LeadsView from "@/components/leads-view";
+import OverviewView from "@/components/overview-view";
+import CalendarView from "@/components/calendar-view";
+import MeetingsView from "@/components/meetings-view";
+import TeamView from "@/components/team-view";
 
 // Component to render the correct tab view based on activeTab
 const TabContent = ({ activeTab }: { activeTab: string }) => {
   switch (activeTab) {
-    case 'overview':
-      return <OverviewView />
-    case 'calendar':
-      return <CalendarView />
-    case 'leads':
-      return <LeadsView />
-    case 'meetings':
-      return <MeetingsView />
-    case 'team':
-      return <TeamView />
-    case 'ai-settings':
+    case "overview":
+      return <OverviewView />;
+    case "calendar":
+      return <CalendarView />;
+    case "leads":
+      return <LeadsView />;
+    case "meetings":
+      return <MeetingsView />;
+    case "team":
+      return <TeamView />;
+    case "ai-settings":
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <h1 className="text-6xl font-bold text-white mb-4">
-              {navigationItems.find(item => item.id === activeTab)?.label}
+              {navigationItems.find((item) => item.id === activeTab)?.label}
             </h1>
             <p className="text-gray-400 text-lg">
-              Welcome to your {navigationItems.find(item => item.id === activeTab)?.label.toLowerCase()} dashboard
+              Welcome to your{" "}
+              {navigationItems
+                .find((item) => item.id === activeTab)
+                ?.label.toLowerCase()}{" "}
+              dashboard
             </p>
           </div>
         </div>
-      )
+      );
     default:
-      return <OverviewView />
+      return <OverviewView />;
   }
-}
+};
 
 const navigationItems = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'leads', label: 'Leads', icon: Users },
-  { id: 'ai-settings', label: 'AI Settings', icon: Settings },
-  { id: 'meetings', label: 'Meetings', icon: Video },
-  { id: 'team', label: 'Team', icon: UserCheck },
-]
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "calendar", label: "Calendar", icon: Calendar },
+  { id: "leads", label: "Leads", icon: Users },
+  { id: "ai-settings", label: "AI Settings", icon: Settings },
+  { id: "meetings", label: "Meetings", icon: Video },
+  { id: "team", label: "Team", icon: UserCheck },
+];
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState("overview");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex">
@@ -79,30 +83,36 @@ export default function DashboardPage() {
         <nav className="flex-1 p-6">
           <div className="space-y-2">
             {navigationItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activeTab === item.id
-              
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group ${
                     isActive
-                      ? 'bg-gradient-to-r from-green-main/20 to-green-light/20 border border-green-main/30 text-green-main'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      ? "bg-gradient-to-r from-green-main/20 to-green-light/20 border border-green-main/30 text-green-main"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   {/* Active indicator bar */}
-                  <div className={`w-1 h-8 rounded-full transition-all duration-200 ${
-                    isActive 
-                      ? 'bg-green-main' 
-                      : 'bg-transparent group-hover:bg-white/20'
-                  }`} />
-                  
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-green-main' : 'text-gray-400'}`} />
+                  <div
+                    className={`w-1 h-8 rounded-full transition-all duration-200 ${
+                      isActive
+                        ? "bg-green-main"
+                        : "bg-transparent group-hover:bg-white/20"
+                    }`}
+                  />
+
+                  <Icon
+                    className={`w-5 h-5 ${
+                      isActive ? "text-green-main" : "text-gray-400"
+                    }`}
+                  />
                   <span className="font-medium">{item.label}</span>
                 </button>
-              )
+              );
             })}
           </div>
         </nav>
@@ -123,5 +133,5 @@ export default function DashboardPage() {
         </AnimatePresence>
       </div>
     </div>
-  )
-} 
+  );
+}
