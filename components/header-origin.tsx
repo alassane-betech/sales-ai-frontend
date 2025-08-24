@@ -1,41 +1,74 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Menu, X, ChevronDown } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import { Menu, X, ChevronDown, LayoutDashboard } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { isAuthenticated } from "@/lib/auth";
 
 export function HeaderOrigin() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isProductOpen, setIsProductOpen] = useState(false)
-  const [isCompanyOpen, setIsCompanyOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProductOpen, setIsProductOpen] = useState(false);
+  const [isCompanyOpen, setIsCompanyOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Vérifier l'état d'authentification au chargement
+    setIsLoggedIn(isAuthenticated());
+
+    // Écouter les changements d'authentification (optionnel)
+    const checkAuth = () => setIsLoggedIn(isAuthenticated());
+    window.addEventListener("storage", checkAuth);
+
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
 
   const navItems = [
     {
-      name: 'Product',
-      href: '#features',
+      name: "Product",
+      href: "#features",
       hasDropdown: true,
       dropdownItems: [
-        { name: 'Features', href: '#features', description: 'Explore our AI-powered tools' },
-        { name: 'Integrations', href: '#integrations', description: 'Connect with your favorite apps' },
-        { name: 'API', href: '#api', description: 'Build custom solutions' },
-        { name: 'Pricing', href: '#pricing', description: 'Choose the right plan' },
-      ]
+        {
+          name: "Features",
+          href: "#features",
+          description: "Explore our AI-powered tools",
+        },
+        {
+          name: "Integrations",
+          href: "#integrations",
+          description: "Connect with your favorite apps",
+        },
+        { name: "API", href: "#api", description: "Build custom solutions" },
+        {
+          name: "Pricing",
+          href: "#pricing",
+          description: "Choose the right plan",
+        },
+      ],
     },
-    { name: 'Solutions', href: '#solutions' },
-    { name: 'Resources', href: '#resources' },
+    { name: "Solutions", href: "#solutions" },
+    { name: "Resources", href: "#resources" },
     {
-      name: 'Company',
-      href: '#about',
+      name: "Company",
+      href: "#about",
       hasDropdown: true,
       dropdownItems: [
-        { name: 'About', href: '#about', description: 'Learn about our mission' },
-        { name: 'Blog', href: '#blog', description: 'Latest insights and updates' },
-        { name: 'Careers', href: '#careers', description: 'Join our team' },
-        { name: 'Contact', href: '#contact', description: 'Get in touch' },
-      ]
+        {
+          name: "About",
+          href: "#about",
+          description: "Learn about our mission",
+        },
+        {
+          name: "Blog",
+          href: "#blog",
+          description: "Latest insights and updates",
+        },
+        { name: "Careers", href: "#careers", description: "Join our team" },
+        { name: "Contact", href: "#contact", description: "Get in touch" },
+      ],
     },
-  ]
+  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
@@ -69,21 +102,28 @@ export function HeaderOrigin() {
                   <div className="relative">
                     <button
                       onClick={() => {
-                        if (item.name === 'Product') setIsProductOpen(!isProductOpen)
-                        if (item.name === 'Company') setIsCompanyOpen(!isCompanyOpen)
+                        if (item.name === "Product")
+                          setIsProductOpen(!isProductOpen);
+                        if (item.name === "Company")
+                          setIsCompanyOpen(!isCompanyOpen);
                       }}
                       className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors duration-200 font-medium py-2"
                     >
                       <span>{item.name}</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
-                        (item.name === 'Product' && isProductOpen) || (item.name === 'Company' && isCompanyOpen) 
-                          ? 'rotate-180' : ''
-                      }`} />
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          (item.name === "Product" && isProductOpen) ||
+                          (item.name === "Company" && isCompanyOpen)
+                            ? "rotate-180"
+                            : ""
+                        }`}
+                      />
                     </button>
 
                     {/* Dropdown Menu */}
                     <AnimatePresence>
-                      {((item.name === 'Product' && isProductOpen) || (item.name === 'Company' && isCompanyOpen)) && (
+                      {((item.name === "Product" && isProductOpen) ||
+                        (item.name === "Company" && isCompanyOpen)) && (
                         <motion.div
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -98,8 +138,12 @@ export function HeaderOrigin() {
                                 href={dropdownItem.href}
                                 className="block px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                               >
-                                <div className="font-medium">{dropdownItem.name}</div>
-                                <div className="text-sm text-gray-400">{dropdownItem.description}</div>
+                                <div className="font-medium">
+                                  {dropdownItem.name}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  {dropdownItem.description}
+                                </div>
                               </a>
                             ))}
                           </div>
@@ -121,12 +165,30 @@ export function HeaderOrigin() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link href="/auth?mode=signin" className="text-gray-300 hover:text-white transition-colors duration-200 font-medium">
-              Sign In
-            </Link>
-            <Link href="/auth?mode=signup" className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-main to-green-light rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900">
-              Start Free Trial
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href="/dashboard"
+                className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-main to-green-light rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/auth?mode=signin"
+                  className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth?mode=signup"
+                  className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-main to-green-light rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900"
+                >
+                  Start Free Trial
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -136,7 +198,11 @@ export function HeaderOrigin() {
               className="text-gray-300 hover:text-white transition-colors p-2"
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -146,7 +212,7 @@ export function HeaderOrigin() {
           {isMenuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="lg:hidden border-t border-white/20"
             >
@@ -177,12 +243,32 @@ export function HeaderOrigin() {
                   </div>
                 ))}
                 <div className="pt-4 border-t border-white/20">
-                  <Link href="/auth?mode=signin" className="block w-full mb-2 px-4 py-2 text-gray-300 hover:text-white transition-colors duration-200">
-                    Sign In
-                  </Link>
-                  <Link href="/auth?mode=signup" className="block w-full px-4 py-2 text-white bg-gradient-to-r from-green-main to-green-light rounded-lg font-medium">
-                    Start Free Trial
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link
+                      href="/dashboard"
+                      className="block w-full px-4 py-2 text-white bg-gradient-to-r from-green-main to-green-light rounded-lg font-medium text-center"
+                    >
+                      <div className="flex items-center justify-center">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth?mode=signin"
+                        className="block w-full mb-2 px-4 py-2 text-gray-300 hover:text-white transition-colors duration-200"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/auth?mode=signup"
+                        className="block w-full px-4 py-2 text-white bg-gradient-to-r from-green-main to-green-light rounded-lg font-medium"
+                      >
+                        Start Free Trial
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -190,5 +276,5 @@ export function HeaderOrigin() {
         </AnimatePresence>
       </div>
     </header>
-  )
-} 
+  );
+}
