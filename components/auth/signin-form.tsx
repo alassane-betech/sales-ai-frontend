@@ -10,6 +10,7 @@ interface SignInFormProps {
   };
   errors: Record<string, string>;
   isLoading: boolean;
+  authError?: string;
   onInputChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -18,6 +19,7 @@ export default function SignInForm({
   formData,
   errors,
   isLoading,
+  authError,
   onInputChange,
   onSubmit,
 }: SignInFormProps) {
@@ -25,6 +27,14 @@ export default function SignInForm({
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      {/* Auth Error */}
+      {authError && (
+        <div className="flex items-center p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+          <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
+          <span>{authError}</span>
+        </div>
+      )}
+
       {/* Email */}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">

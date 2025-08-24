@@ -26,16 +26,16 @@ interface User {
 
 // Configuration des cookies
 const COOKIE_OPTIONS = {
+  expires: 7, // 7 jours (js-cookie utilise 'expires' au lieu de 'maxAge')
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
-  maxAge: 60 * 60 * 24 * 7, // 7 jours
 };
 
 // Configuration des cookies pour les données utilisateur
 const USER_COOKIE_OPTIONS = {
+  expires: 30, // 30 jours
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
-  maxAge: 60 * 60 * 24 * 30, // 30 jours
 };
 
 // Fonction de connexion

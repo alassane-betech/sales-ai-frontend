@@ -19,6 +19,7 @@ export default function AuthPage() {
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
+  const [authError, setAuthError] = useState("");
 
   // Form states
   const [formData, setFormData] = useState({
@@ -35,6 +36,8 @@ export default function AuthPage() {
 
   useEffect(() => {
     setIsSignIn(mode === "signin");
+    // Clear auth error when switching modes
+    setAuthError("");
   }, [mode]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -42,6 +45,10 @@ export default function AuthPage() {
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+    // Clear auth error when user starts typing
+    if (authError) {
+      setAuthError("");
     }
   };
 
@@ -81,6 +88,7 @@ export default function AuthPage() {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setAuthError(""); // Clear previous errors
 
     try {
       if (isSignIn) {
@@ -97,13 +105,27 @@ export default function AuthPage() {
           if (error.response) {
             // Le serveur a répondu avec une erreur
             console.error("Connexion échouée:", error.response.data);
-            // Vous pouvez ajouter un état d'erreur ici si nécessaire
+
+            // Gestion des différents codes d'erreur
+            if (error.response.status === 401) {
+              setAuthError("Email ou mot de passe incorrect");
+            } else if (error.response.status === 400) {
+              setAuthError("Données de connexion invalides");
+            } else if (error.response.status === 500) {
+              setAuthError("Erreur serveur. Veuillez réessayer plus tard");
+            } else {
+              setAuthError("Erreur de connexion. Veuillez réessayer");
+            }
           } else if (error.request) {
             // La requête a été faite mais aucune réponse reçue
             console.error("Erreur réseau:", error.request);
+            setAuthError(
+              "Erreur de connexion au serveur. Vérifiez votre connexion internet"
+            );
           } else {
             // Autre chose s'est passé
             console.error("Erreur:", error.message);
+            setAuthError("Une erreur inattendue s'est produite");
           }
         }
       } else {
@@ -213,6 +235,7 @@ export default function AuthPage() {
                 }}
                 errors={errors}
                 isLoading={isLoading}
+                authError={authError}
                 onInputChange={handleInputChange}
                 onSubmit={handleSubmit}
               />

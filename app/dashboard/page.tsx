@@ -9,12 +9,14 @@ import {
   Settings,
   Video,
   UserCheck,
+  LogOut,
 } from "lucide-react";
 import LeadsView from "@/components/leads-view";
 import OverviewView from "@/components/overview-view";
 import CalendarView from "@/components/calendar-view";
 import MeetingsView from "@/components/meetings-view";
 import TeamView from "@/components/team-view";
+import { logout } from "@/lib/auth";
 
 // Component to render the correct tab view based on activeTab
 const TabContent = ({ activeTab }: { activeTab: string }) => {
@@ -62,6 +64,10 @@ const navigationItems = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex">
@@ -116,6 +122,18 @@ export default function DashboardPage() {
             })}
           </div>
         </nav>
+
+        {/* Logout Button */}
+        <div className="p-6 border-t border-white/10">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group text-red-400 hover:text-red-300 hover:bg-red-500/10"
+          >
+            <div className="w-1 h-8 rounded-full bg-transparent group-hover:bg-red-500/20 transition-all duration-200" />
+            <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-300" />
+            <span className="font-medium">Déconnexion</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}
