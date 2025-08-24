@@ -61,8 +61,7 @@ export default function ResetPasswordPage() {
           password,
         }
       );
-      // Redirect to auth with success flag to show toast there
-      router.push("/auth?reset=success");
+      router.push("/auth");
     } catch (err) {
       setError(
         "Impossible de réinitialiser le mot de passe. Réessayez plus tard."

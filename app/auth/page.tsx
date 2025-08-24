@@ -35,13 +35,6 @@ export default function AuthPage() {
     setIsForgotVisible(false);
   }, [mode]);
 
-  useEffect(() => {
-    const reset = searchParams.get("reset");
-    if (reset === "success") {
-      console.log("Mot de passe mis à jour. Vous pouvez vous connecter.");
-    }
-  }, [searchParams]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center p-4">
       {/* Background particles */}
