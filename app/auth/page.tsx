@@ -9,7 +9,6 @@ import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
 import { isAuthenticated } from "@/lib/auth";
-import { toast } from "sonner";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -39,7 +38,7 @@ export default function AuthPage() {
   useEffect(() => {
     const reset = searchParams.get("reset");
     if (reset === "success") {
-      toast.success("Mot de passe mis à jour. Vous pouvez vous connecter.");
+      console.log("Mot de passe mis à jour. Vous pouvez vous connecter.");
     }
   }, [searchParams]);
 
