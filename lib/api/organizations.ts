@@ -25,3 +25,18 @@ export const getUserOrganizations = async (): Promise<Organization[]> => {
     throw error;
   }
 };
+
+// Récupérer une organisation spécifique par son ID
+export const getOrganizationById = async (
+  organizationId: string
+): Promise<Organization> => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/organizations/${organizationId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'organisation:", error);
+    throw error;
+  }
+};

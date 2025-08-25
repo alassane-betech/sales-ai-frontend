@@ -13,24 +13,14 @@ import {
   UserCheck,
   LogOut,
   Building2,
-  ArrowLeft,
 } from "lucide-react";
 import LeadsView from "@/components/leads-view";
 import OverviewView from "@/components/overview-view";
 import CalendarView from "@/components/calendar-view";
 import MeetingsView from "@/components/meetings-view";
 import TeamView from "@/components/team-view";
-
-interface Organization {
-  id: string;
-  name: string;
-  description?: string;
-  logo?: string;
-  role: "owner" | "admin" | "member";
-  memberCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { getOrganizationById, Organization } from "@/lib/api/organizations";
+import OrganizationSelector from "@/components/organization-selector";
 
 // Component to render the correct tab view based on activeTab
 const TabContent = ({ activeTab }: { activeTab: string }) => {
@@ -101,22 +91,8 @@ export default function OrganizationDashboardPage() {
   const fetchOrganization = async () => {
     try {
       setLoading(true);
-      // TODO: Remplacer par l'appel API réel
-      // const response = await fetch(`/organizations/${organizationId}`);
-      // const data = await response.json();
-
-      // Données de test en attendant l'API
-      const mockOrg: Organization = {
-        id: organizationId,
-        name: "TechCorp Solutions",
-        description: "Solutions technologiques innovantes pour entreprises",
-        role: "owner",
-        memberCount: 12,
-        createdAt: "2024-01-15",
-        updatedAt: "2024-01-20",
-      };
-
-      setOrganization(mockOrg);
+      const data = await getOrganizationById(organizationId);
+      setOrganization(data);
     } catch (err) {
       console.error("Erreur:", err);
       router.replace("/dashboard/organizations");
@@ -127,10 +103,6 @@ export default function OrganizationDashboardPage() {
 
   const handleLogout = () => {
     logout();
-  };
-
-  const handleBackToOrganizations = () => {
-    router.push("/dashboard/organizations");
   };
 
   if (loading) {
@@ -156,7 +128,7 @@ export default function OrganizationDashboardPage() {
             Cette organisation n'existe pas ou vous n'y avez pas accès.
           </p>
           <button
-            onClick={handleBackToOrganizations}
+            onClick={() => router.push("/dashboard/organizations")}
             className="px-4 py-2 bg-green-main text-white rounded-lg hover:bg-green-light transition-colors"
           >
             Retour aux organisations
@@ -172,27 +144,8 @@ export default function OrganizationDashboardPage() {
       <div className="w-80 bg-white/5 backdrop-blur-md border-r border-white/10 flex flex-col h-screen">
         {/* Header avec info de l'organisation */}
         <div className="p-6 border-b border-white/10">
-          <div className="flex items-center space-x-3 mb-4">
-            <button
-              onClick={handleBackToOrganizations}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
-            </button>
-            <div className="w-10 h-10 bg-gradient-to-r from-green-main to-green-light rounded-xl flex items-center justify-center shadow-lg">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-green-main to-green-light bg-clip-text text-transparent">
-              {organization.name}
-            </span>
-          </div>
-
-          {/* Info de l'organisation */}
-          <div className="text-sm text-gray-400">
-            <p className="mb-1">{organization.description}</p>
-            <p>
-              {organization.memberCount} membres • {organization.role}
-            </p>
+          <div className="flex items-center space-x-3">
+            <OrganizationSelector currentOrganization={organization} />
           </div>
         </div>
 
