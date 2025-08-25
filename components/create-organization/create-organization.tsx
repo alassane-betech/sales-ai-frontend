@@ -64,7 +64,6 @@ export default function CreateOrganization({
       );
 
       if (response.status === 201 || response.status === 200) {
-        // Succès - rediriger vers le dashboard
         onSuccess();
       }
     } catch (error: any) {

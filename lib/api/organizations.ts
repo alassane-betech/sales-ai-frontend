@@ -1,0 +1,27 @@
+import axios from "axios";
+
+// Configuration d'axios avec l'URL de base
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export interface Organization {
+  organization_id: string;
+  organization_name: string;
+  branding: string;
+  role: "owner" | "admin" | "member";
+  memberCount: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Récupérer toutes les organisations de l'utilisateur connecté
+export const getUserOrganizations = async (): Promise<Organization[]> => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/organizations/my-organizations`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des organisations:", error);
+    throw error;
+  }
+};
