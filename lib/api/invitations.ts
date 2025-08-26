@@ -32,3 +32,16 @@ export const sendTeamInvitations = async (
     throw error;
   }
 };
+
+export const acceptInvitation = async (invitationToken: string) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/invitations/accept`, {
+      token: invitationToken,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error accepting invitation:", error);
+    throw error;
+  }
+};
