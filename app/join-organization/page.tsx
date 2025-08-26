@@ -12,7 +12,7 @@ export default function JoinOrganizationPage() {
 
   useEffect(() => {
     const handleInvitation = async () => {
-      const token = searchParams.get("token");
+      const token = searchParams.get("invitation_token");
       setHasToken(!!token);
 
       if (token) {

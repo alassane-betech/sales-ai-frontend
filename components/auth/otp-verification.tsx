@@ -14,6 +14,7 @@ interface OTPVerificationProps {
   onBack: () => void;
   onLoadingChange: (loading: boolean) => void;
   onErrorChange: (error: string) => void;
+  invitationToken?: string | null;
 }
 
 export default function OTPVerification({
@@ -25,6 +26,7 @@ export default function OTPVerification({
   onBack,
   onLoadingChange,
   onErrorChange,
+  invitationToken,
 }: OTPVerificationProps) {
   const handleVerifyOTP = async () => {
     if (!otp || otp.length !== 6) {
@@ -50,7 +52,11 @@ export default function OTPVerification({
         Cookies.set("user", JSON.stringify(response.data.user));
 
         // Redirect to create organization page
-        window.location.href = "/create-organization";
+        if (invitationToken) {
+          window.location.href = `/join-organization?invitation_token=${invitationToken}`;
+        } else {
+          window.location.href = "/create-organization";
+        }
       }
     } catch (error: any) {
       if (error.response) {

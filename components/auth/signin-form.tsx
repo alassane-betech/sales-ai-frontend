@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
-import axios from "axios";
 import { login, setupAxiosInterceptors } from "@/lib/auth";
 import ForgotPasswordForm from "@/components/auth/forgot-password-form";
 
 interface SignInFormProps {
   onForgotVisibleChange?: (visible: boolean) => void;
+  invitationToken?: string | null;
 }
 
-export default function SignInForm({ onForgotVisibleChange }: SignInFormProps) {
+export default function SignInForm({
+  onForgotVisibleChange,
+  invitationToken,
+}: SignInFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [formEmail, setFormEmail] = useState<string>("");
   const [formPassword, setFormPassword] = useState<string>("");
@@ -46,7 +49,11 @@ export default function SignInForm({ onForgotVisibleChange }: SignInFormProps) {
     try {
       await login(formEmail, formPassword);
       setupAxiosInterceptors();
-      window.location.href = "/dashboard";
+      if (invitationToken) {
+        window.location.href = `/join-organization?invitation_token=${invitationToken}`;
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (error: any) {
       if (error.response) {
         if (error.response.status === 401) {

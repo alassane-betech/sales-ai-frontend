@@ -13,6 +13,7 @@ import { isAuthenticated } from "@/lib/auth";
 export default function AuthPage() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") || "signin";
+  const invitationToken = searchParams.get("invitation_token");
   const [isSignIn, setIsSignIn] = useState(mode === "signin");
   const [isLoading, setIsLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
@@ -109,7 +110,10 @@ export default function AuthPage() {
           {/* Form or OTP */}
           {!showOTP ? (
             isSignIn ? (
-              <SignInForm onForgotVisibleChange={setIsForgotVisible} />
+              <SignInForm
+                onForgotVisibleChange={setIsForgotVisible}
+                invitationToken={invitationToken}
+              />
             ) : (
               <SignUpForm
                 onStartOtp={(email) => {
@@ -135,6 +139,7 @@ export default function AuthPage() {
               }}
               onLoadingChange={setIsLoading}
               onErrorChange={setOtpError}
+              invitationToken={invitationToken}
             />
           )}
 
@@ -145,7 +150,9 @@ export default function AuthPage() {
                 ? "Don't have an account? "
                 : "Already have an account? "}
               <Link
-                href={isSignIn ? "/auth?mode=signup" : "/auth?mode=signin"}
+                href={`/auth?mode=${isSignIn ? "signup" : "signin"}${
+                  invitationToken && `&invitation_token=${invitationToken}`
+                }`}
                 className="text-green-main hover:text-green-light transition-colors font-medium"
               >
                 {isSignIn ? "Start free trial" : "Sign in"}
