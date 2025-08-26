@@ -18,12 +18,18 @@ import LeadsView from "@/components/leads-view";
 import OverviewView from "@/components/overview-view";
 import CalendarView from "@/components/calendar-view";
 import MeetingsView from "@/components/meetings-view";
-import TeamView from "@/components/team-view";
+import TeamView from "@/components/dashboard/team/team-view";
 import { getOrganizationById, Organization } from "@/lib/api/organizations";
 import OrganizationSelector from "@/components/organization-selector";
 
 // Component to render the correct tab view based on activeTab
-const TabContent = ({ activeTab }: { activeTab: string }) => {
+const TabContent = ({
+  activeTab,
+  organizationId,
+}: {
+  activeTab: string;
+  organizationId: string;
+}) => {
   switch (activeTab) {
     case "overview":
       return <OverviewView />;
@@ -34,7 +40,7 @@ const TabContent = ({ activeTab }: { activeTab: string }) => {
     case "meetings":
       return <MeetingsView />;
     case "team":
-      return <TeamView />;
+      return <TeamView organizationId={organizationId} />;
     case "ai-settings":
       return (
         <div className="flex items-center justify-center h-full">
@@ -210,7 +216,7 @@ export default function OrganizationDashboardPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <TabContent activeTab={activeTab} />
+            <TabContent activeTab={activeTab} organizationId={organizationId} />
           </motion.div>
         </AnimatePresence>
       </div>

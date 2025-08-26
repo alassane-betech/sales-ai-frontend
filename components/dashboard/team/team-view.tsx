@@ -13,7 +13,10 @@ import {
   Trash2,
   X,
   Mail,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
+import { sendTeamInvitations } from "@/lib/api/invitations";
 
 // Types
 interface TeamMember {
@@ -24,6 +27,10 @@ interface TeamMember {
   availability: "Parametré" | "Pas encore défini" | "Indisponible";
   avatar?: string;
   initials: string;
+}
+
+interface TeamViewProps {
+  organizationId: string;
 }
 
 // Mock data
@@ -127,13 +134,18 @@ const AvailabilityBadge = ({
 );
 
 // Main component
-export default function TeamView() {
+export default function TeamView({ organizationId }: TeamViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedAvailability, setSelectedAvailability] =
     useState<string>("all");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [emails, setEmails] = useState<string[]>([""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
 
   const filteredMembers = mockTeamMembers.filter((member) => {
     const matchesSearch =
@@ -163,13 +175,38 @@ export default function TeamView() {
     setEmails(newEmails);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validEmails = emails.filter((email) => email.trim() !== "");
-    console.log("Adding team members with emails:", validEmails);
-    // TODO: Implement API call logic here
-    setIsAddMemberModalOpen(false);
-    setEmails([""]);
+
+    if (validEmails.length === 0) {
+      setSubmitStatus({
+        type: "error",
+        message: "Veuillez saisir au moins une adresse email valide.",
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitStatus({ type: null, message: "" });
+
+      const response = await sendTeamInvitations(organizationId, validEmails);
+      // close modal and reset form
+      setIsAddMemberModalOpen(false);
+      setEmails([""]);
+      setSubmitStatus({ type: null, message: "" });
+    } catch (error: any) {
+      console.error("Erreur lors de l'envoi des invitations:", error);
+      setSubmitStatus({
+        type: "error",
+        message:
+          error.response?.data?.message ||
+          "Erreur lors de l'envoi des invitations. Veuillez réessayer.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const openAddMemberModal = () => {
@@ -372,7 +409,11 @@ export default function TeamView() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-white">Add Team Members</h2>
               <button
-                onClick={() => setIsAddMemberModalOpen(false)}
+                onClick={() => {
+                  setIsAddMemberModalOpen(false);
+                  setEmails([""]);
+                  setSubmitStatus({ type: null, message: "" });
+                }}
                 className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -384,6 +425,24 @@ export default function TeamView() {
               <p className="text-gray-400 text-sm">
                 Enter email addresses of team members you want to invite
               </p>
+
+              {/* Status Message */}
+              {submitStatus.type && (
+                <div
+                  className={`p-3 rounded-lg flex items-center space-x-2 ${
+                    submitStatus.type === "success"
+                      ? "bg-green-500/20 border border-green-500/30 text-green-300"
+                      : "bg-red-500/20 border border-red-500/30 text-red-300"
+                  }`}
+                >
+                  {submitStatus.type === "success" ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4" />
+                  )}
+                  <span className="text-sm">{submitStatus.message}</span>
+                </div>
+              )}
 
               {/* Email Inputs */}
               <div className="space-y-3">
@@ -429,16 +488,32 @@ export default function TeamView() {
               <div className="flex items-center space-x-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setIsAddMemberModalOpen(false)}
+                  onClick={() => {
+                    setIsAddMemberModalOpen(false);
+                    setEmails([""]);
+                    setSubmitStatus({ type: null, message: "" });
+                  }}
                   className="flex-1 py-2 px-4 border border-white/20 rounded-lg text-white hover:bg-white/10 transition-colors"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-dark hover:to-green-main transition-all duration-200"
+                  disabled={isSubmitting}
+                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-dark hover:to-green-main transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
-                  Send Invites
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4" />
+                      <span>Send Invites</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
