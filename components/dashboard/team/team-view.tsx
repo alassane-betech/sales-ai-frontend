@@ -1,104 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Users,
-  Plus,
-  Search,
-  Filter,
-  Info,
-  MoreVertical,
-  Edit,
-  Trash2,
-  X,
-  Mail,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
-import { sendTeamInvitations } from "@/lib/api/invitations";
+import { Search, Filter, Info, MoreVertical, Edit, Trash2 } from "lucide-react";
+import AddMemberModal from "./add-member-modal";
+import TeamHeader from "./team-header";
+import TeamSummary from "./team-summary";
+import { getOrganizationMembers, TeamMember } from "@/lib/api/organizations";
 
 // Types
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "Super Admin" | "Closer" | "Manager" | "Viewer";
-  availability: "Parametré" | "Pas encore défini" | "Indisponible";
-  avatar?: string;
-  initials: string;
-}
-
 interface TeamViewProps {
   organizationId: string;
 }
 
-// Mock data
-const mockTeamMembers: TeamMember[] = [
-  {
-    id: "1",
-    name: "Adrien Gavel",
-    email: "gavel.adrien@gmail.com",
-    role: "Closer",
-    availability: "Parametré",
-    initials: "AG",
-  },
-  {
-    id: "2",
-    name: "Alassane Fall",
-    email: "alassane@be-tech.co",
-    role: "Super Admin",
-    availability: "Parametré",
-    initials: "AF",
-  },
-  {
-    id: "3",
-    name: "Clement D",
-    email: "clement@dabreteau.co",
-    role: "Super Admin",
-    availability: "Pas encore défini",
-    initials: "CD",
-  },
-  {
-    id: "4",
-    name: "Hugo Chatelain",
-    email: "hchatelain18@gmail.com",
-    role: "Super Admin",
-    availability: "Pas encore défini",
-    initials: "HC",
-  },
-  {
-    id: "5",
-    name: "Moussa Toure",
-    email: "moussa@be-tech.co",
-    role: "Closer",
-    availability: "Parametré",
-    initials: "MT",
-  },
-];
-
 // Utility functions
 const getRoleColor = (role: TeamMember["role"]) => {
   switch (role) {
-    case "Super Admin":
+    case "owner":
       return "bg-blue-500/20 text-blue-300 border-blue-500/30";
-    case "Closer":
-      return "bg-green-500/20 text-green-300 border-green-500/30";
-    case "Manager":
+    case "admin":
       return "bg-purple-500/20 text-purple-300 border-purple-500/30";
-    case "Viewer":
-      return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+    case "closer":
+      return "bg-green-500/20 text-green-300 border-green-500/30";
   }
 };
 
-const getAvailabilityColor = (availability: TeamMember["availability"]) => {
-  switch (availability) {
-    case "Parametré":
-      return "bg-green-500/20 text-green-300 border-green-500/30";
-    case "Pas encore défini":
-      return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
-    case "Indisponible":
-      return "bg-red-500/20 text-red-300 border-red-500/30";
+const getAvailabilityColor = () => {
+  return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
+};
+
+const getRoleLabel = (role: TeamMember["role"]) => {
+  switch (role) {
+    case "owner":
+      return "Owner";
+    case "admin":
+      return "Admin";
+    case "closer":
+      return "Closer";
   }
 };
 
@@ -115,21 +53,15 @@ const RoleBadge = ({ role }: { role: TeamMember["role"] }) => (
       role
     )}`}
   >
-    {role}
+    {getRoleLabel(role)}
   </div>
 );
 
-const AvailabilityBadge = ({
-  availability,
-}: {
-  availability: TeamMember["availability"];
-}) => (
+const AvailabilityBadge = () => (
   <div
-    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getAvailabilityColor(
-      availability
-    )}`}
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getAvailabilityColor()}`}
   >
-    {availability}
+    Pas encore défini
   </div>
 );
 
@@ -140,101 +72,60 @@ export default function TeamView({ organizationId }: TeamViewProps) {
   const [selectedAvailability, setSelectedAvailability] =
     useState<string>("all");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [emails, setEmails] = useState<string[]>([""]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{
-    type: "success" | "error" | null;
-    message: string;
-  }>({ type: null, message: "" });
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredMembers = mockTeamMembers.filter((member) => {
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const data = await getOrganizationMembers(organizationId);
+        setTeamMembers(data);
+      } catch (error) {
+        console.error("Error fetching team members:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamMembers();
+  }, [organizationId]);
+
+  const filteredMembers = teamMembers.filter((member) => {
+    const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
     const matchesSearch =
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === "all" || member.role === selectedRole;
-    const matchesAvailability =
-      selectedAvailability === "all" ||
-      member.availability === selectedAvailability;
+    const matchesAvailability = selectedAvailability === "all";
 
     return matchesSearch && matchesRole && matchesAvailability;
   });
 
-  const handleAddEmail = () => {
-    setEmails([...emails, ""]);
-  };
-
-  const handleRemoveEmail = (index: number) => {
-    if (emails.length > 1) {
-      setEmails(emails.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleEmailChange = (index: number, value: string) => {
-    const newEmails = [...emails];
-    newEmails[index] = value;
-    setEmails(newEmails);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const validEmails = emails.filter((email) => email.trim() !== "");
-
-    if (validEmails.length === 0) {
-      setSubmitStatus({
-        type: "error",
-        message: "Veuillez saisir au moins une adresse email valide.",
-      });
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setSubmitStatus({ type: null, message: "" });
-
-      const response = await sendTeamInvitations(organizationId, validEmails);
-      // close modal and reset form
-      setIsAddMemberModalOpen(false);
-      setEmails([""]);
-      setSubmitStatus({ type: null, message: "" });
-    } catch (error: any) {
-      console.error("Erreur lors de l'envoi des invitations:", error);
-      setSubmitStatus({
-        type: "error",
-        message:
-          error.response?.data?.message ||
-          "Erreur lors de l'envoi des invitations. Veuillez réessayer.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const openAddMemberModal = () => {
     setIsAddMemberModalOpen(true);
-    setEmails([""]);
   };
+
+  const closeAddMemberModal = () => {
+    setIsAddMemberModalOpen(false);
+  };
+
+  // Calculate summary data
+  const ownerCount = teamMembers.filter((m) => m.role === "owner").length;
+  const adminCount = teamMembers.filter((m) => m.role === "admin").length;
+  const closerCount = teamMembers.filter((m) => m.role === "closer").length;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-main"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Users className="w-8 h-8 text-green-main" />
-          <div>
-            <h1 className="text-3xl font-bold text-white">Team Management</h1>
-            <p className="text-gray-400">
-              Manage your organization members and their roles
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={openAddMemberModal}
-          className="px-4 py-2 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-dark hover:to-green-main transition-all duration-200 flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Member</span>
-        </button>
-      </div>
+      <TeamHeader onAddMember={openAddMemberModal} />
 
       {/* Filters */}
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-4">
@@ -260,10 +151,9 @@ export default function TeamView({ organizationId }: TeamViewProps) {
               className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-main appearance-none"
             >
               <option value="all">All Roles</option>
-              <option value="Super Admin">Super Admin</option>
-              <option value="Closer">Closer</option>
-              <option value="Manager">Manager</option>
-              <option value="Viewer">Viewer</option>
+              <option value="owner">Owner</option>
+              <option value="admin">Admin</option>
+              <option value="closer">Closer</option>
             </select>
           </div>
 
@@ -276,9 +166,7 @@ export default function TeamView({ organizationId }: TeamViewProps) {
               className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-main appearance-none"
             >
               <option value="all">All Availability</option>
-              <option value="Parametré">Parametré</option>
               <option value="Pas encore défini">Pas encore défini</option>
-              <option value="Indisponible">Indisponible</option>
             </select>
           </div>
         </div>
@@ -316,7 +204,7 @@ export default function TeamView({ organizationId }: TeamViewProps) {
             <tbody className="divide-y divide-white/10">
               {filteredMembers.map((member, index) => (
                 <motion.tr
-                  key={member.id}
+                  key={member.user_id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -324,9 +212,14 @@ export default function TeamView({ organizationId }: TeamViewProps) {
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <Avatar initials={member.initials} name={member.name} />
+                      <Avatar
+                        initials={`${member.first_name.charAt(
+                          0
+                        )}${member.last_name.charAt(0)}`}
+                        name={`${member.first_name} ${member.last_name}`}
+                      />
                       <span className="text-white font-medium">
-                        {member.name}
+                        {member.first_name} {member.last_name}
                       </span>
                     </div>
                   </td>
@@ -337,7 +230,7 @@ export default function TeamView({ organizationId }: TeamViewProps) {
                     <RoleBadge role={member.role} />
                   </td>
                   <td className="px-6 py-4">
-                    <AvailabilityBadge availability={member.availability} />
+                    <AvailabilityBadge />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
@@ -361,7 +254,9 @@ export default function TeamView({ organizationId }: TeamViewProps) {
         {/* Empty State */}
         {filteredMembers.length === 0 && (
           <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <div className="w-12 h-12 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-white text-lg">👥</span>
+            </div>
             <p className="text-gray-400 text-lg">No members found</p>
             <p className="text-gray-500 text-sm">
               Try adjusting your search or filters
@@ -371,155 +266,20 @@ export default function TeamView({ organizationId }: TeamViewProps) {
       </div>
 
       {/* Summary */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-4">
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <span>
-            Showing {filteredMembers.length} of {mockTeamMembers.length} members
-          </span>
-          <div className="flex items-center space-x-4">
-            <span>
-              Super Admins:{" "}
-              {mockTeamMembers.filter((m) => m.role === "Super Admin").length}
-            </span>
-            <span>
-              Closers:{" "}
-              {mockTeamMembers.filter((m) => m.role === "Closer").length}
-            </span>
-            <span>
-              Available:{" "}
-              {
-                mockTeamMembers.filter((m) => m.availability === "Parametré")
-                  .length
-              }
-            </span>
-          </div>
-        </div>
-      </div>
+      <TeamSummary
+        filteredCount={filteredMembers.length}
+        totalCount={teamMembers.length}
+        superAdminCount={ownerCount}
+        closerCount={closerCount}
+        availableCount={0}
+      />
 
       {/* Add Member Modal */}
-      {isAddMemberModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gray-900 border border-white/10 rounded-lg p-6 w-full max-w-md mx-4"
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Add Team Members</h2>
-              <button
-                onClick={() => {
-                  setIsAddMemberModalOpen(false);
-                  setEmails([""]);
-                  setSubmitStatus({ type: null, message: "" });
-                }}
-                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <p className="text-gray-400 text-sm">
-                Enter email addresses of team members you want to invite
-              </p>
-
-              {/* Status Message */}
-              {submitStatus.type && (
-                <div
-                  className={`p-3 rounded-lg flex items-center space-x-2 ${
-                    submitStatus.type === "success"
-                      ? "bg-green-500/20 border border-green-500/30 text-green-300"
-                      : "bg-red-500/20 border border-red-500/30 text-red-300"
-                  }`}
-                >
-                  {submitStatus.type === "success" ? (
-                    <CheckCircle className="w-4 h-4" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4" />
-                  )}
-                  <span className="text-sm">{submitStatus.message}</span>
-                </div>
-              )}
-
-              {/* Email Inputs */}
-              <div className="space-y-3">
-                {emails.map((email, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="email"
-                        placeholder="Enter email address"
-                        value={email}
-                        onChange={(e) =>
-                          handleEmailChange(index, e.target.value)
-                        }
-                        required
-                        className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main"
-                      />
-                    </div>
-                    {emails.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveEmail(index)}
-                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Add Email Button */}
-              <button
-                type="button"
-                onClick={handleAddEmail}
-                className="w-full py-2 px-4 border border-dashed border-white/20 rounded-lg text-white/70 hover:text-white hover:border-white/40 transition-colors flex items-center justify-center space-x-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Another Email</span>
-              </button>
-
-              {/* Modal Actions */}
-              <div className="flex items-center space-x-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddMemberModalOpen(false);
-                    setEmails([""]);
-                    setSubmitStatus({ type: null, message: "" });
-                  }}
-                  className="flex-1 py-2 px-4 border border-white/20 rounded-lg text-white hover:bg-white/10 transition-colors"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 py-2 px-4 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-dark hover:to-green-main transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4" />
-                      <span>Send Invites</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
+      <AddMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={closeAddMemberModal}
+        organizationId={organizationId}
+      />
     </div>
   );
 }
