@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ArrowRight, Play, Star, Users, Clock, TrendingUp } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 export function HeroOrigin() {
@@ -71,10 +72,10 @@ export function HeroOrigin() {
           </Link>
 
           {/* Secondary Button - Origin UI Style */}
-          <button className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-green-main border-2 border-green-main rounded-xl hover:bg-green-main hover:text-white transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900">
+          <Button variant="outline" className="group relative inline-flex items-center justify-center px-8 py-7 text-lg font-medium text-green-main border-2 border-green-main rounded-xl hover:bg-green-main hover:text-white transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900">
             <Play className="mr-2 h-5 w-5" />
             <span>See It in Action</span>
-          </button>
+          </Button>
         </motion.div>
 
         {/* Stats Grid - Origin UI Card Style */}
