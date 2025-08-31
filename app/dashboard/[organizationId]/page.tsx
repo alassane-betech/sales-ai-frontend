@@ -12,11 +12,10 @@ import {
   Video,
   UserCheck,
   LogOut,
-  Building2,
 } from "lucide-react";
 import LeadsView from "@/components/leads-view";
 import OverviewView from "@/components/overview-view";
-import CalendarView from "@/components/calendar-view";
+import CalendarView from "@/components/dashboard/calendar-view/calendar-view";
 import MeetingsView from "@/components/meetings-view";
 import TeamView from "@/components/dashboard/team/team-view";
 import { getOrganizationById, Organization } from "@/lib/api/organizations";
