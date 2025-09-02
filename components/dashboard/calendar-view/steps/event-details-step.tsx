@@ -5,8 +5,6 @@ import { useState } from "react";
 interface EventDetailsStepProps {
   event: any;
   onEventChange: (event: any) => void;
-  currentEventId: string | null;
-  setCurrentEventId: (id: string | null) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   onNext: () => void;
@@ -15,33 +13,38 @@ interface EventDetailsStepProps {
 export default function EventDetailsStep({
   event,
   onEventChange,
-  currentEventId,
-  setCurrentEventId,
   isLoading,
   setIsLoading,
   onNext,
 }: EventDetailsStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const handleSubmit = async () => {
-    if (!validateEventDetails(event)) return;
+    const validationErrors = validateEventDetails(event);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
+    setErrors({});
     setIsLoading(true);
     try {
       const dataToSend = prepareEventDetailsData(event);
 
-      if (currentEventId) {
-        // Mode modification
-        await updateEvent(currentEventId, dataToSend);
+      if (event.id) {
+        const updatedEvent = await updateEvent(event.id, dataToSend);
+        onEventChange(updatedEvent);
       } else {
-        // Mode création
-        const response = await createEvent(dataToSend);
-        setCurrentEventId(response.id);
+        const newEvent = await createEvent(dataToSend);
+        onEventChange(newEvent);
       }
       onNext();
     } catch (error: any) {
-      setErrors(event);
+      setErrors({
+        general:
+          error.message || `Failed to ${event.id ? "update" : "create"} event`,
+      });
       console.error(
-        `Failed to ${currentEventId ? "update" : "create"} event:`,
+        `Failed to ${event.id ? "update" : "create"} event:`,
         error
       );
     } finally {
@@ -51,6 +54,14 @@ export default function EventDetailsStep({
 
   return (
     <div className="space-y-4">
+      {errors.general && (
+        <div className="p-3 bg-red-500/20 border border-red-500 rounded-lg">
+          <p className="text-sm text-red-400 flex items-center">
+            <AlertCircle className="w-4 h-4 mr-2" />
+            {errors.general}
+          </p>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-300 mb-2">
           Event Name *
@@ -131,10 +142,10 @@ export default function EventDetailsStep({
         className="w-full px-6 py-3 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-600 hover:to-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading
-          ? currentEventId
+          ? event.id
             ? "Updating..."
             : "Creating..."
-          : currentEventId
+          : event.id
           ? "Update & Next"
           : "Create & Next"}
       </button>
