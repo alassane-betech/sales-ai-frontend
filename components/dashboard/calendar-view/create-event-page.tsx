@@ -1,173 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar,
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
   Users,
   Clock,
   HelpCircle,
   XCircle,
   Bell,
-  CheckCircle,
 } from "lucide-react";
-import axios from "axios";
-
-// Composant pour l'étape Event Details (existant)
-function EventDetailsStep({
-  formData,
-  setFormData,
-  errors,
-  handleInputChange,
-}: {
-  formData: any;
-  setFormData: any;
-  errors: any;
-  handleInputChange: (field: string, value: string) => void;
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Event Name *
-        </label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          className={`w-full px-3 py-2 bg-white/10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-400 ${
-            errors.name ? "border-red-500" : "border-white/20"
-          }`}
-          placeholder="Enter event name"
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-400 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            {errors.name}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Event Slug *
-        </label>
-        <input
-          type="text"
-          value={formData.slug}
-          onChange={(e) => handleInputChange("slug", e.target.value)}
-          className={`w-full px-3 py-2 bg-white/10 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-400 ${
-            errors.slug ? "border-red-500" : "border-white/20"
-          }`}
-          placeholder="Enter event slug"
-        />
-        {errors.slug && (
-          <p className="mt-1 text-sm text-red-400 flex items-center">
-            <AlertCircle className="w-4 h-4 mr-1" />
-            {errors.slug}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Description
-        </label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
-          rows={3}
-          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-400"
-          placeholder="Enter event description"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Location Type
-        </label>
-        <select
-          value={formData.location_type}
-          onChange={(e) => handleInputChange("location_type", e.target.value)}
-          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
-        >
-          <option value="google_meet">Google Meet</option>
-          <option value="zoom">Zoom</option>
-          <option value="phone">Phone Call</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-// Composant pour l'étape Hosts
-function HostsStep() {
-  return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-white mb-2">Hosts</h3>
-        <p className="text-gray-400">Configure event hosts</p>
-      </div>
-    </div>
-  );
-}
-
-// Composant pour l'étape Event Time
-function EventTimeStep() {
-  return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-white mb-2">Event Time</h3>
-        <p className="text-gray-400">Set event date and time</p>
-      </div>
-    </div>
-  );
-}
-
-// Composant pour l'étape Invitee Questions
-function InviteeQuestionsStep() {
-  return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-white mb-2">
-          Invitee Questions
-        </h3>
-        <p className="text-gray-400">Configure questions for invitees</p>
-      </div>
-    </div>
-  );
-}
-
-// Composant pour l'étape Disqualifications
-function DisqualificationsStep() {
-  return (
-    <div className="space-y-4">
-      <div className="text-center py-8">
-        <h3 className="text-lg font-medium text-white mb-2">
-          Disqualifications
-        </h3>
-        <p className="text-gray-400">Set disqualification criteria</p>
-      </div>
-    </div>
-  );
-}
-
-// Composant pour l'étape Notifications
-function NotificationsStep() {
-  return (
-    <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="text-center py-8">
-          <h3 className="text-lg font-medium text-white mb-2">Notifications</h3>
-          <p className="text-gray-400">Configure notification settings</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { getEventById } from "@/lib/api/events";
+import EventDetailsStep, {
+  validateEventDetails,
+  prepareEventDetailsData,
+} from "./steps/event-details-step";
+import HostsStep, { validateHosts, prepareHostsData } from "./steps/hosts-step";
+import EventTimeStep, {
+  validateEventTime,
+  prepareEventTimeData,
+} from "./steps/event-time-step";
+import InviteeQuestionsStep, {
+  validateInviteeQuestions,
+  prepareInviteeQuestionsData,
+} from "./steps/invitee-questions-step";
+import DisqualificationsStep, {
+  validateDisqualifications,
+  prepareDisqualificationsData,
+} from "./steps/disqualifications-step";
+import NotificationsStep, {
+  validateNotifications,
+  prepareNotificationsData,
+} from "./steps/notifications-step";
 
 // Composant du menu latéral
 function SidebarMenu({
@@ -212,11 +76,13 @@ function SidebarMenu({
 
 export default function CreateEventPage({
   organizationId,
+  eventId,
 }: {
   organizationId: string;
+  eventId?: string;
 }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState({
+  const [event, setEvent] = useState({
     name: "",
     slug: "",
     description: "",
@@ -224,108 +90,78 @@ export default function CreateEventPage({
     organization_id: organizationId,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [currentEventId, setCurrentEventId] = useState<string | null>(
+    eventId || null
+  );
+
+  // Charger les données de l'événement si on a un ID
+  useEffect(() => {
+    if (currentEventId) {
+      const loadEvent = async () => {
+        try {
+          const eventData = await getEventById(currentEventId);
+          setEvent({
+            name: eventData.name || "",
+            slug: eventData.slug || "",
+            description: eventData.description || "",
+            location_type: eventData.location_type || "google_meet",
+            organization_id: organizationId,
+          });
+        } catch (error) {
+          console.error("Erreur lors du chargement de l'événement:", error);
+        }
+      };
+      loadEvent();
+    }
+  }, [currentEventId, organizationId]);
 
   const steps = [
     {
       name: "Event Details",
       component: EventDetailsStep,
       icon: <Calendar className="w-4 h-4" />,
+      validate: validateEventDetails,
+      prepareData: prepareEventDetailsData,
     },
     {
       name: "Hosts",
       component: HostsStep,
       icon: <Users className="w-4 h-4" />,
+      validate: validateHosts,
+      prepareData: prepareHostsData,
     },
     {
       name: "Event Time & Limits",
       component: EventTimeStep,
       icon: <Clock className="w-4 h-4" />,
+      validate: validateEventTime,
+      prepareData: prepareEventTimeData,
     },
     {
       name: "Invitee Questions",
       component: InviteeQuestionsStep,
       icon: <HelpCircle className="w-4 h-4" />,
+      validate: validateInviteeQuestions,
+      prepareData: prepareInviteeQuestionsData,
     },
     {
       name: "Disqualification",
       component: DisqualificationsStep,
       icon: <XCircle className="w-4 h-4" />,
+      validate: validateDisqualifications,
+      prepareData: prepareDisqualificationsData,
     },
     {
       name: "Notifications",
       component: NotificationsStep,
       icon: <Bell className="w-4 h-4" />,
+      validate: validateNotifications,
+      prepareData: prepareNotificationsData,
     },
   ];
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Event name is required";
-    }
-    if (!formData.slug.trim()) {
-      newErrors.slug = "Event slug is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    try {
-      console.log("Creating event with data:", formData);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/events`,
-        {
-          name: formData.name,
-          slug: formData.slug,
-          description: formData.description,
-          location_type: formData.location_type,
-          organization_id: formData.organization_id,
-        }
-      );
-
-      if (response.status === 201 || response.status === 200) {
-        console.log("Event created successfully:", response.data);
-        // Reset form
-        setFormData({
-          name: "",
-          slug: "",
-          description: "",
-          location_type: "google_meet",
-          organization_id: organizationId,
-        });
-      }
-    } catch (error: any) {
-      console.error("Failed to create event:", error);
-      if (error.response?.data?.message) {
-        setErrors({ general: error.response.data.message });
-      } else {
-        setErrors({
-          general: "Failed to create event. Please try again.",
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -337,9 +173,8 @@ export default function CreateEventPage({
     }
   };
 
-  const CurrentStepComponent = steps[currentStep].component;
-  const isFirstStepValid =
-    formData.name.trim() !== "" && formData.slug.trim() !== "";
+  const CurrentStepComponent = steps[currentStep].component as any;
+  const isFirstStepValid = currentEventId !== null;
 
   return (
     <div className="h-fit p-6">
@@ -356,10 +191,12 @@ export default function CreateEventPage({
               <Calendar className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">
-              Create New Event
+              {currentEventId ? "Edit Event" : "Create New Event"}
             </h2>
             <p className="text-gray-400 text-sm">
-              Set up your event step by step
+              {currentEventId
+                ? "Modify your event settings"
+                : "Set up your event step by step"}
             </p>
           </div>
 
@@ -376,53 +213,20 @@ export default function CreateEventPage({
             <div className="flex-1">
               {/* Step Content */}
               <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-                <CurrentStepComponent
-                  formData={formData}
-                  setFormData={setFormData}
-                  errors={errors}
-                  handleInputChange={handleInputChange}
-                />
-              </div>
-
-              {/* Navigation Buttons */}
-              <div className="flex justify-between mt-6">
-                <button
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                  className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </button>
-
-                {currentStep === steps.length - 1 ? (
-                  <button
-                    onClick={handleSubmit}
-                    disabled={isLoading}
-                    className="px-6 py-3 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-600 hover:to-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? "Creating Event..." : "Create Event"}
-                  </button>
+                {currentStep === 0 ? (
+                  <EventDetailsStep
+                    event={event}
+                    onEventChange={setEvent}
+                    currentEventId={currentEventId}
+                    setCurrentEventId={setCurrentEventId}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
+                    onNext={nextStep}
+                  />
                 ) : (
-                  <button
-                    onClick={nextStep}
-                    className="px-6 py-3 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-600 hover:to-green-500 transition-all duration-300 flex items-center"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </button>
+                  <CurrentStepComponent />
                 )}
               </div>
-
-              {/* Error Display */}
-              {errors.general && (
-                <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg mt-4">
-                  <p className="text-red-400 text-sm flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-2" />
-                    {errors.general}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </motion.div>

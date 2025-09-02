@@ -19,82 +19,35 @@ import {
 } from "lucide-react";
 import CreateEventPage from "./create-event-page";
 import { useParams } from "next/navigation";
+import axios from "axios";
 
-interface CalendarEvent {
+// Configuration d'axios avec l'URL de base
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+interface Event {
   id: string;
-  title: string;
-  start: string;
-  end: string;
-  type: "availability" | "blocked" | "custom";
-  status: "active" | "inactive" | "pending";
+  organization_id: string;
+  name: string;
+  slug: string;
   description?: string;
-  suffix?: string;
-  internalNote?: string;
-  duration: number; // in minutes
-  increment: number; // in minutes
-  graceTime: number; // in minutes
-  settings?: {
-    recurring?: boolean;
-    timezone?: string;
-    buffer?: number;
-  };
+  location_type: "phone" | "google_meet" | "zoom";
+  created_by: string;
+  confirmation_redirect_url?: string;
+  internal_note?: string;
+  max_days_ahead?: number;
+  duration_minutes: number;
+  slot_increment_minutes: number;
+  min_notice_minutes: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
-
-// Mock data
-const mockEvents: CalendarEvent[] = [
-  {
-    id: "1",
-    title: "Weekly Availability Window",
-    start: "2024-01-20T09:00:00Z",
-    end: "2024-01-20T17:00:00Z",
-    type: "availability",
-    status: "active",
-    description: "Standard working hours for client meetings",
-    suffix: "consultation",
-    internalNote: "Primary availability for new client consultations",
-    duration: 60,
-    increment: 30,
-    graceTime: 15,
-    settings: {
-      recurring: true,
-      timezone: "America/New_York",
-      buffer: 15,
-    },
-  },
-  {
-    id: "2",
-    title: "Lunch Break Block",
-    start: "2024-01-22T12:00:00Z",
-    end: "2024-01-22T13:00:00Z",
-    type: "blocked",
-    status: "active",
-    description: "Daily lunch break - no meetings scheduled",
-    suffix: "break",
-    internalNote: "Mandatory break time - no exceptions",
-    duration: 60,
-    increment: 60,
-    graceTime: 0,
-  },
-  {
-    id: "3",
-    title: "Custom Availability Period",
-    start: "2024-01-25T14:00:00Z",
-    end: "2024-01-25T16:00:00Z",
-    type: "custom",
-    status: "pending",
-    description: "Extended availability for urgent client requests",
-    suffix: "urgent",
-    internalNote: "Only for high-priority clients",
-    duration: 45,
-    increment: 15,
-    graceTime: 10,
-  },
-];
 
 export default function CalendarView() {
   // State
-  const [events, setEvents] = useState<CalendarEvent[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(["events"])
@@ -103,6 +56,31 @@ export default function CalendarView() {
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
   const organizationId = params.organizationId as string;
+
+  // Fetch events from API
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchEvents = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/events/organization/${organizationId}`
+        );
+        setEvents(response.data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Une erreur est survenue"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [organizationId]);
   // Availability state
   const [availability, setAvailability] = useState({
     activeEvents: "3",
@@ -217,29 +195,20 @@ export default function CalendarView() {
     }));
   };
 
-  // Format date for display
-  const formatEventDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
-
   // Get status badge config
-  const getStatusConfig = (status: CalendarEvent["status"]) => {
-    switch (status) {
-      case "active":
-        return { color: "bg-green-100 text-green-800", icon: CheckCircle };
-      case "inactive":
-        return { color: "bg-red-100 text-red-800", icon: XCircle };
-      case "pending":
-        return { color: "bg-yellow-100 text-yellow-800", icon: RefreshCw };
-      default:
-        return { color: "bg-gray-100 text-gray-800", icon: AlertCircle };
+  const getStatusConfig = (isActive: boolean) => {
+    if (isActive) {
+      return {
+        color: "bg-green-100 text-green-800",
+        icon: CheckCircle,
+        label: "Active",
+      };
+    } else {
+      return {
+        color: "bg-red-100 text-red-800",
+        icon: XCircle,
+        label: "Inactive",
+      };
     }
   };
 
@@ -266,7 +235,10 @@ export default function CalendarView() {
           </div>
         </div>
 
-        <CreateEventPage organizationId={organizationId} />
+        <CreateEventPage
+          organizationId={organizationId}
+          eventId={selectedEventId || undefined}
+        />
       </div>
     );
   }
@@ -285,7 +257,10 @@ export default function CalendarView() {
 
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setShowCreateEvent(true)}
+              onClick={() => {
+                setSelectedEventId(null);
+                setShowCreateEvent(true);
+              }}
               className="px-4 py-2 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-600 hover:to-green-500 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -337,61 +312,94 @@ export default function CalendarView() {
                   transition={{ duration: 0.3 }}
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                 >
-                  {events.map((event) => {
-                    const statusConfig = getStatusConfig(event.status);
-                    const Icon = statusConfig.icon;
+                  {loading ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+                      <span className="ml-2 text-gray-400">
+                        Loading events...
+                      </span>
+                    </div>
+                  ) : error ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <AlertCircle className="w-6 h-6 text-red-400" />
+                      <span className="ml-2 text-red-400">{error}</span>
+                    </div>
+                  ) : events.length === 0 ? (
+                    <div className="col-span-full flex items-center justify-center py-8">
+                      <Calendar className="w-6 h-6 text-gray-400" />
+                      <span className="ml-2 text-gray-400">
+                        No events found
+                      </span>
+                    </div>
+                  ) : (
+                    events.map((event) => {
+                      const statusConfig = getStatusConfig(event.is_active);
+                      const Icon = statusConfig.icon;
 
-                    return (
-                      <motion.div
-                        key={event.id}
-                        whileHover={{ y: -2 }}
-                        className="border border-white/10 rounded-lg p-4 hover:bg-white/10 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white/5"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="font-medium text-white line-clamp-2">
-                            {event.title}
-                          </h3>
-                          <span
-                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}
-                          >
-                            <Icon className="w-3 h-3 mr-1" />
-                            {event.status}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2 text-sm text-gray-300">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            {formatEventDate(event.start)}
+                      return (
+                        <motion.div
+                          key={event.id}
+                          whileHover={{ y: -2 }}
+                          className="border border-white/10 rounded-lg p-4 hover:bg-white/10 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white/5 h-64 flex flex-col"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="font-medium text-white line-clamp-2">
+                              {event.name}
+                            </h3>
+                            <span
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}
+                            >
+                              <Icon className="w-3 h-3 mr-1" />
+                              {statusConfig.label}
+                            </span>
                           </div>
 
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-2" />
-                            {event.duration}min • {event.increment}min increment
-                          </div>
+                          <div className="space-y-2 text-sm text-gray-300 flex-1">
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Created:{" "}
+                              {new Date(event.created_at).toLocaleDateString()}
+                            </div>
 
-                          {event.suffix && (
+                            <div className="flex items-center">
+                              <Clock className="w-4 h-4 mr-2" />
+                              {event.duration_minutes}min •{" "}
+                              {event.slot_increment_minutes}min increment
+                            </div>
+
                             <div className="flex items-center">
                               <Tag className="w-4 h-4 mr-2" />
                               <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
-                                {event.suffix}
+                                {event.location_type}
                               </span>
                             </div>
-                          )}
 
-                          {event.description && (
-                            <p className="text-gray-400 line-clamp-2">
-                              {event.description}
-                            </p>
-                          )}
-                        </div>
+                            <div className="flex-1">
+                              {event.description ? (
+                                <p className="text-gray-400 line-clamp-2">
+                                  {event.description}
+                                </p>
+                              ) : (
+                                <p className="text-gray-400 line-clamp-2 opacity-0">
+                                  &nbsp;
+                                </p>
+                              )}
+                            </div>
+                          </div>
 
-                        <button className="mt-3 w-full px-3 py-2 text-sm bg-white/10 text-white rounded-md hover:bg-white/20 transition-colors">
-                          View Details
-                        </button>
-                      </motion.div>
-                    );
-                  })}
+                          <button
+                            onClick={() => {
+                              setSelectedEventId(event.id);
+                              setShowCreateEvent(true);
+                            }}
+                            className="mt-3 w-full px-3 py-2 text-sm bg-white/10 text-white rounded-md hover:bg-white/20 transition-colors"
+                          >
+                            View Details
+                          </button>
+                        </motion.div>
+                      );
+                    })
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
