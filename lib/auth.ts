@@ -27,11 +27,15 @@ interface User {
 // Configuration des cookies
 const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  expires: 30, // 30 jours (1 mois)
 };
 
 // Configuration des cookies pour les données utilisateur
 const USER_COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  expires: 30, // 30 jours (1 mois)
 };
 
 // Fonction de connexion
@@ -99,8 +103,19 @@ export const isAuthenticated = (): boolean => {
   return !!getAccessToken() && !!getRefreshToken();
 };
 
+// Variable pour éviter les intercepteurs dupliqués
+let interceptorsSetup = false;
+
 // Configuration d'axios pour inclure automatiquement le token d'accès
 export const setupAxiosInterceptors = () => {
+  // Éviter la configuration multiple des intercepteurs
+  if (interceptorsSetup) {
+    console.log("Intercepteurs Axios déjà configurés, ignoré");
+    return;
+  }
+
+  console.log("Configuration des intercepteurs Axios...");
+
   // Intercepteur pour ajouter le token d'accès aux requêtes
   axios.interceptors.request.use(
     (config) => {
@@ -123,23 +138,38 @@ export const setupAxiosInterceptors = () => {
 
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
+        console.log("Token expiré, tentative de rafraîchissement...");
 
         try {
           const refreshToken = getRefreshToken();
           if (refreshToken) {
+            console.log("Rafraîchissement du token en cours...");
             const response = await axios.post("/auth/refresh", {
               refresh_token: refreshToken,
             });
 
-            const { access_token, refresh_token } = response.data;
+            const { access_token, refresh_token: newRefreshToken } =
+              response.data;
+
+            // Mettre à jour les cookies avec les nouveaux tokens
             Cookies.set("access_token", access_token, COOKIE_OPTIONS);
-            Cookies.set("refresh_token", refresh_token, COOKIE_OPTIONS);
+            Cookies.set("refresh_token", newRefreshToken, COOKIE_OPTIONS);
+
+            console.log("Tokens rafraîchis avec succès");
 
             // Retenter la requête originale avec le nouveau token
             originalRequest.headers.Authorization = `Bearer ${access_token}`;
             return axios(originalRequest);
+          } else {
+            console.log("Aucun refresh token disponible");
+            logout();
+            return Promise.reject(error);
           }
         } catch (refreshError) {
+          console.error(
+            "Erreur lors du rafraîchissement du token:",
+            refreshError
+          );
           // Si le refresh échoue, déconnecter l'utilisateur
           logout();
           return Promise.reject(refreshError);
@@ -149,4 +179,15 @@ export const setupAxiosInterceptors = () => {
       return Promise.reject(error);
     }
   );
+
+  interceptorsSetup = true;
+  console.log("Intercepteurs Axios configurés avec succès");
+};
+
+// Fonction pour réinitialiser les intercepteurs (utile pour les tests)
+export const resetAxiosInterceptors = () => {
+  axios.interceptors.request.clear();
+  axios.interceptors.response.clear();
+  interceptorsSetup = false;
+  console.log("Intercepteurs Axios réinitialisés");
 };

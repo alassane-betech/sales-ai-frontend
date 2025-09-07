@@ -47,9 +47,19 @@ export default function OTPVerification({
       );
 
       if (response.status === 200) {
-        Cookies.set("access_token", response.data.access_token);
-        Cookies.set("refresh_token", response.data.refresh_token);
-        Cookies.set("user", JSON.stringify(response.data.user));
+        const COOKIE_OPTIONS = {
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax" as const,
+          expires: 30, // 30 jours (1 mois)
+        };
+
+        Cookies.set("access_token", response.data.access_token, COOKIE_OPTIONS);
+        Cookies.set(
+          "refresh_token",
+          response.data.refresh_token,
+          COOKIE_OPTIONS
+        );
+        Cookies.set("user", JSON.stringify(response.data.user), COOKIE_OPTIONS);
 
         // Redirect to create organization page
         if (invitationToken) {

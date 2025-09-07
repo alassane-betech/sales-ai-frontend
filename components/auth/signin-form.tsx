@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
-import { login, setupAxiosInterceptors } from "@/lib/auth";
+import { login } from "@/lib/auth";
 import ForgotPasswordForm from "@/components/auth/forgot-password-form";
 
 interface SignInFormProps {
@@ -48,7 +48,6 @@ export default function SignInForm({
     setAuthError("");
     try {
       await login(formEmail, formPassword);
-      setupAxiosInterceptors();
       if (invitationToken) {
         window.location.href = `/join-organization?invitation_token=${invitationToken}`;
       } else {
