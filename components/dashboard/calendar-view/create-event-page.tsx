@@ -16,10 +16,7 @@ import EventDetailsStep, {
   prepareEventDetailsData,
 } from "./steps/event-details-step";
 import HostsStep, { validateHosts, prepareHostsData } from "./steps/hosts-step";
-import EventTimeStep, {
-  validateEventTime,
-  prepareEventTimeData,
-} from "./steps/event-time-step";
+import EventTimeStep, { validateEventTime } from "./steps/event-time-step";
 import InviteeQuestionsStep, {
   validateInviteeQuestions,
   prepareInviteeQuestionsData,
@@ -83,11 +80,17 @@ export default function CreateEventPage({
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [event, setEvent] = useState({
+    id: null,
     name: "",
     slug: "",
     description: "",
     location_type: "google_meet",
     organization_id: organizationId,
+    max_days_ahead: 14,
+    duration_minutes: 30,
+    slot_increment_minutes: 15,
+    buffer_before_minutes: 0,
+    buffer_after_minutes: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,11 +105,17 @@ export default function CreateEventPage({
         try {
           const eventData = await getEventById(currentEventId);
           setEvent({
+            id: eventData.id,
             name: eventData.name || "",
             slug: eventData.slug || "",
             description: eventData.description || "",
             location_type: eventData.location_type || "google_meet",
             organization_id: organizationId,
+            max_days_ahead: eventData.max_days_ahead,
+            duration_minutes: eventData.duration_minutes,
+            slot_increment_minutes: eventData.slot_increment_minutes,
+            buffer_before_minutes: eventData.buffer_before_minutes,
+            buffer_after_minutes: eventData.buffer_after_minutes,
           });
         } catch (error) {
           console.error("Erreur lors du chargement de l'événement:", error);
@@ -136,7 +145,6 @@ export default function CreateEventPage({
       component: EventTimeStep,
       icon: <Clock className="w-4 h-4" />,
       validate: validateEventTime,
-      prepareData: prepareEventTimeData,
     },
     {
       name: "Invitee Questions",
@@ -217,14 +225,18 @@ export default function CreateEventPage({
                   <EventDetailsStep
                     event={event}
                     onEventChange={setEvent}
-                    currentEventId={currentEventId}
-                    setCurrentEventId={setCurrentEventId}
                     isLoading={isLoading}
                     setIsLoading={setIsLoading}
                     onNext={nextStep}
                   />
                 ) : (
-                  <CurrentStepComponent />
+                  <CurrentStepComponent
+                    event={event}
+                    onEventChange={setEvent}
+                    isLoading={isLoading}
+                    setIsLoading={setIsLoading}
+                    onNext={nextStep}
+                  />
                 )}
               </div>
             </div>
