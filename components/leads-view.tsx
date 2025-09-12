@@ -1,26 +1,18 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence, Reorder } from 'framer-motion'
 import { 
-  ChevronDown, 
-  ChevronUp, 
   Mail, 
   MessageCircle, 
   Calendar, 
   User, 
-  RefreshCw,
   MoreHorizontal,
   Phone,
-  Clock,
-  Eye,
-  MousePointer,
   CheckCircle,
   XCircle,
   AlertCircle,
   Star,
-  Tag,
-  Search,
   Filter,
   Download,
   Plus
@@ -153,7 +145,7 @@ export default function LeadsView() {
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set())
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Lead; direction: 'asc' | 'desc' } | null>(null)
+  const [sortConfig, /* setSortConfig */] = useState<{ key: keyof Lead; direction: 'asc' | 'desc' } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
   const [selectedCard, setSelectedCard] = useState<Lead | null>(null)
@@ -166,6 +158,9 @@ export default function LeadsView() {
     return [...leads].sort((a, b) => {
       const aValue = a[sortConfig.key]
       const bValue = b[sortConfig.key]
+
+      if (aValue === null || aValue === undefined) return sortConfig.direction === 'asc' ? 1 : -1
+      if (bValue === null || bValue === undefined) return sortConfig.direction === 'asc' ? -1 : 1
       
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
@@ -211,21 +206,21 @@ export default function LeadsView() {
   }
 
   // Handle sorting
-  const handleSort = (key: keyof Lead) => {
-    setSortConfig(prev => {
-      if (prev?.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
-      }
-      return { key, direction: 'asc' }
-    })
-  }
+  // const handleSort = (key: keyof Lead) => {
+  //   setSortConfig(prev => {
+  //     if (prev?.key === key) {
+  //       return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+  //     }
+  //     return { key, direction: 'asc' }
+  //   })
+  // }
 
   // Handle status change (for Kanban drag & drop)
-  const handleStatusChange = (leadId: string, newStatus: Lead['status']) => {
-    setLeads(prev => prev.map(lead => 
-      lead.id === leadId ? { ...lead, status: newStatus } : lead
-    ))
-  }
+  // const handleStatusChange = (leadId: string, newStatus: Lead['status']) => {
+  //   setLeads(prev => prev.map(lead => 
+  //     lead.id === leadId ? { ...lead, status: newStatus } : lead
+  //   ))
+  // }
 
   // Group leads by status for Kanban
   const leadsByStatus = leads.reduce((acc, lead) => {

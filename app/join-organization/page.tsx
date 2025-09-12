@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { acceptInvitation } from "@/lib/api/invitations";
 
-export default function JoinOrganizationPage() {
+function OrganizationLoader() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = searchParams.get("invitation_token");
 
   useEffect(() => {
     const handleInvitation = async () => {
-      const token = searchParams.get("invitation_token");
       setHasToken(!!token);
 
       if (token) {
@@ -35,7 +35,7 @@ export default function JoinOrganizationPage() {
     };
 
     handleInvitation();
-  }, [searchParams, router]);
+  }, [token, router]);
 
   if (!hasToken) {
     return (
@@ -64,5 +64,13 @@ export default function JoinOrganizationPage() {
         <p className="text-gray-600">Chargement...</p>
       </div>
     </div>
+  );
+}
+
+export default function JoinOrganizationPage() {
+  return (
+    <Suspense>
+      <OrganizationLoader />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +10,7 @@ import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
 import { isAuthenticated } from "@/lib/auth";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") || "signin";
   const invitationToken = searchParams.get("invitation_token");
@@ -23,6 +23,64 @@ export default function AuthPage() {
 
   // Email used for OTP and header context only
   const [otpEmail, setOtpEmail] = useState("");
+
+  // Helper functions to reduce complexity
+  const getPageTitle = () => {
+    if (showOTP) return "Verify Your Email";
+    if (isSignIn && isForgotVisible) return "Réinitialiser le mot de passe";
+    if (isSignIn) return "Welcome back";
+    return "Start your free trial";
+  };
+
+  const getPageDescription = () => {
+    if (showOTP) return `We've sent a 6-digit code to ${otpEmail}`;
+    if (isSignIn && isForgotVisible) return "Entrez votre email pour recevoir un lien de réinitialisation";
+    if (isSignIn) return "Sign in to your account to continue";
+    return "Get started with AI-powered sales automation";
+  };
+
+  const renderForm = () => {
+    if (showOTP) {
+      return (
+        <OTPVerification
+          email={otpEmail}
+          otp={otp}
+          otpError={otpError}
+          isLoading={isLoading}
+          onOtpChange={(value) => {
+            setOtp(value);
+            if (otpError) setOtpError("");
+          }}
+          onBack={() => {
+            setShowOTP(false);
+            setOtp("");
+            setOtpError("");
+          }}
+          onLoadingChange={setIsLoading}
+          onErrorChange={setOtpError}
+          invitationToken={invitationToken}
+        />
+      );
+    }
+    
+    if (isSignIn) {
+      return (
+        <SignInForm
+          onForgotVisibleChange={setIsForgotVisible}
+          invitationToken={invitationToken}
+        />
+      );
+    }
+    
+    return (
+      <SignUpForm
+        onStartOtp={(email) => {
+          setOtpEmail(email);
+          setShowOTP(true);
+        }}
+      />
+    );
+  };
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -80,68 +138,15 @@ export default function AuthPage() {
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-2">
-              {showOTP
-                ? "Verify Your Email"
-                : isSignIn
-                ? isForgotVisible
-                  ? "Réinitialiser le mot de passe"
-                  : "Welcome back"
-                : "Start your free trial"}
+              {getPageTitle()}
             </h1>
-            {showOTP ? (
-              <p className="text-gray-400">{`We've sent a 6-digit code to ${otpEmail}`}</p>
-            ) : isSignIn ? (
-              isForgotVisible ? (
-                <p className="text-gray-400">
-                  Entrez votre email pour recevoir un lien de réinitialisation
-                </p>
-              ) : (
-                <p className="text-gray-400">
-                  Sign in to your account to continue
-                </p>
-              )
-            ) : (
-              <p className="text-gray-400">
-                Get started with AI-powered sales automation
-              </p>
-            )}
+            <p className="text-gray-400">
+              {getPageDescription()}
+            </p>
           </div>
 
           {/* Form or OTP */}
-          {!showOTP ? (
-            isSignIn ? (
-              <SignInForm
-                onForgotVisibleChange={setIsForgotVisible}
-                invitationToken={invitationToken}
-              />
-            ) : (
-              <SignUpForm
-                onStartOtp={(email) => {
-                  setOtpEmail(email);
-                  setShowOTP(true);
-                }}
-              />
-            )
-          ) : (
-            <OTPVerification
-              email={otpEmail}
-              otp={otp}
-              otpError={otpError}
-              isLoading={isLoading}
-              onOtpChange={(value) => {
-                setOtp(value);
-                if (otpError) setOtpError("");
-              }}
-              onBack={() => {
-                setShowOTP(false);
-                setOtp("");
-                setOtpError("");
-              }}
-              onLoadingChange={setIsLoading}
-              onErrorChange={setOtpError}
-              invitationToken={invitationToken}
-            />
-          )}
+          {renderForm()}
 
           {/* Footer */}
           <div className="mt-8 text-center">
@@ -188,5 +193,17 @@ export default function AuthPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-green-main/30 border-t-green-main rounded-full animate-spin"></div>
+      </div>
+    }>
+      <AuthPageContent />
+    </Suspense>
   );
 }
