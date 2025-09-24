@@ -52,6 +52,7 @@ export interface QuestionOption {
   label: string;
   value: string;
   position: number;
+  is_active?: boolean;
 }
 
 // Interface pour les données de question
@@ -89,6 +90,38 @@ export const addEventQuestion = async (
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la création de la question:", error);
+
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        // Erreur de réponse du serveur
+        const { status, data } = error.response;
+        throw new Error(
+          `Erreur ${status}: ${data.message || "Erreur inconnue"}`
+        );
+      } else if (error.request) {
+        // Erreur de réseau
+        throw new Error("Erreur de connexion au serveur");
+      }
+    }
+    // Autre erreur
+    throw new Error("Erreur inattendue");
+  }
+};
+
+// Fonction pour modifier une question d'un événement
+export const updateEventQuestion = async (
+  eventId: string,
+  questionId: string,
+  questionData: QuestionData
+) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/events/${eventId}/questions/${questionId}`,
+      questionData
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la modification de la question:", error);
 
     if (axios.isAxiosError(error)) {
       if (error.response) {
