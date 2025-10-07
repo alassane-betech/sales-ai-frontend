@@ -26,6 +26,7 @@ interface EventData {
     email: string;
     phone_number?: string;
   };
+  questions?: any[];
 }
 
 interface FormData {
@@ -78,6 +79,10 @@ export default function CalendarPage({ params }: CalendarPageProps) {
   const handleFormSubmit = (data: FormData) => {
     setFormData(data);
     setCurrentStep("booking");
+  };
+
+  const handleGoBackToForm = () => {
+    setCurrentStep("form");
   };
 
   const handleDateSelect = (date: Date) => {
@@ -137,7 +142,10 @@ export default function CalendarPage({ params }: CalendarPageProps) {
             <FormStep
               eventData={eventData}
               onContinue={handleFormSubmit}
+              onGoBack={handleGoBackToForm}
               className="w-full"
+              questions={eventData.questions}
+              isReadOnly={currentStep === "booking"}
             />
           </div>
 
