@@ -137,8 +137,12 @@ export default function CalendarPage({ params }: CalendarPageProps) {
         </div>
 
         <div className="flex flex-col lg:flex-row min-h-[600px]">
-          {/* Form Section */}
-          <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center bg-[#1E1E21]">
+          {/* Form Section - On mobile: shown when currentStep is booking, on desktop: always shown */}
+          <div
+            className={`w-full lg:w-1/2 p-8 flex flex-col justify-center bg-[#1E1E21] ${
+              currentStep === "form" ? "flex lg:flex" : "hidden lg:flex"
+            }`}
+          >
             <FormStep
               eventData={eventData}
               onContinue={handleFormSubmit}
@@ -152,8 +156,12 @@ export default function CalendarPage({ params }: CalendarPageProps) {
           {/* Divider */}
           <div className="w-px bg-[#232327] hidden lg:block"></div>
 
-          {/* Booking Section */}
-          <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center bg-[#232327] relative">
+          {/* Booking Section - On mobile: shown when currentStep is form, on desktop: always shown */}
+          <div
+            className={`w-full lg:w-1/2 p-8 flex flex-col justify-center bg-[#232327] relative ${
+              currentStep === "booking" ? "flex lg:flex" : "hidden lg:flex"
+            }`}
+          >
             <div className="w-full">
               {/* Step Content */}
               {currentStep === "form" && (

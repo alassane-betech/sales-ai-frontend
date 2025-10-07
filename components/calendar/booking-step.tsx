@@ -83,13 +83,13 @@ export function BookingStep({
             <h3 className="text-lg font-bold text-white mb-4 text-center">
               Sélectionnez une date
             </h3>
-            <div className="bg-[#1E1E21] rounded-lg p-4 border border-[#007953]/20 shadow-sm">
+            <div className="bg-[#1E1E21] rounded-lg border border-[#007953]/20 shadow-sm">
               <Calendar
                 selected={selectedDate}
                 onSelect={handleDateSelect}
                 mode="single"
                 required
-                className="w-full"
+                className="w-full rounded-2xl"
               />
             </div>
           </div>
