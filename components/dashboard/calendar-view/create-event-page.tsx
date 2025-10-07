@@ -182,7 +182,7 @@ export default function CreateEventPage({
   };
 
   const CurrentStepComponent = steps[currentStep].component as any;
-  const isFirstStepValid = currentEventId !== null;
+  const isFirstStepValid = currentEventId !== null || event.id !== null;
 
   return (
     <div className="h-fit p-6">
