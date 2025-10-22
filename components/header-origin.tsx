@@ -89,7 +89,7 @@ export function HeaderOrigin() {
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-light rounded-full animate-pulse"></div>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-green-main to-green-light bg-clip-text text-transparent">
-                SalesAI
+                ShowUp
               </span>
             </div>
           </motion.div>

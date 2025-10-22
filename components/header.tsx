@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'About', href: '#about' },
-  ]
+    { name: "Features", href: "#features" },
+    { name: "How It Works", href: "#how-it-works" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "About", href: "#about" },
+  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 glass-effect">
@@ -29,7 +29,7 @@ export function Header() {
               <div className="w-8 h-8 bg-gradient-to-r from-neon-blue to-neon-teal rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <span className="text-xl font-bold gradient-text">SalesAI</span>
+              <span className="text-xl font-bold gradient-text">ShowUp</span>
             </div>
           </motion.div>
 
@@ -64,7 +64,11 @@ export function Header() {
               className="text-gray-300 hover:text-white transition-colors"
               aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -73,7 +77,7 @@ export function Header() {
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden"
           >
@@ -96,5 +100,5 @@ export function Header() {
         )}
       </div>
     </header>
-  )
-} 
+  );
+}

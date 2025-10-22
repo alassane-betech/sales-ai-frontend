@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { motion } from 'framer-motion'
-import { Mail, Twitter, Linkedin, Github, ArrowRight } from 'lucide-react'
+import { motion } from "framer-motion";
+import { Mail, Twitter, Linkedin, Github, ArrowRight } from "lucide-react";
 
 export function Footer() {
   const footerLinks = {
     product: [
-      { name: 'Features', href: '#features' },
-      { name: 'Pricing', href: '#pricing' },
-      { name: 'Integrations', href: '#integrations' },
-      { name: 'API', href: '#api' },
+      { name: "Features", href: "#features" },
+      { name: "Pricing", href: "#pricing" },
+      { name: "Integrations", href: "#integrations" },
+      { name: "API", href: "#api" },
     ],
     company: [
-      { name: 'About', href: '#about' },
-      { name: 'Blog', href: '#blog' },
-      { name: 'Careers', href: '#careers' },
-      { name: 'Contact', href: '#contact' },
+      { name: "About", href: "#about" },
+      { name: "Blog", href: "#blog" },
+      { name: "Careers", href: "#careers" },
+      { name: "Contact", href: "#contact" },
     ],
     support: [
-      { name: 'Help Center', href: '#help' },
-      { name: 'Documentation', href: '#docs' },
-      { name: 'Status', href: '#status' },
-      { name: 'Community', href: '#community' },
+      { name: "Help Center", href: "#help" },
+      { name: "Documentation", href: "#docs" },
+      { name: "Status", href: "#status" },
+      { name: "Community", href: "#community" },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
-      { name: 'Terms of Service', href: '#terms' },
-      { name: 'Cookie Policy', href: '#cookies' },
-      { name: 'GDPR', href: '#gdpr' },
+      { name: "Privacy Policy", href: "#privacy" },
+      { name: "Terms of Service", href: "#terms" },
+      { name: "Cookie Policy", href: "#cookies" },
+      { name: "GDPR", href: "#gdpr" },
     ],
-  }
+  };
 
   const socialLinks = [
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Github, href: '#', label: 'GitHub' },
-  ]
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    { icon: Github, href: "#", label: "GitHub" },
+  ];
 
   return (
     <footer className="relative py-16 border-t border-gray-800">
@@ -48,12 +48,13 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-r from-neon-blue to-neon-teal rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <span className="text-xl font-bold gradient-text">SalesAI</span>
+              <span className="text-xl font-bold gradient-text">ShowUp</span>
             </div>
             <p className="text-gray-400 mb-6 max-w-md">
-              Transform your sales process with AI-powered scheduling, outreach automation, and meeting intelligence.
+              Transform your sales process with AI-powered scheduling, outreach
+              automation, and meeting intelligence.
             </p>
-            
+
             {/* Newsletter signup */}
             <div className="mb-6">
               <h3 className="text-white font-semibold mb-3">Stay updated</h3>
@@ -155,17 +156,21 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 SalesAI. All rights reserved.
+            © 2024 ShowUp. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
-            <span className="text-gray-400 text-sm">Made with ❤️ for sales teams</span>
+            <span className="text-gray-400 text-sm">
+              Made with ❤️ for sales teams
+            </span>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-green-500 text-sm">System Status: All Good</span>
+              <span className="text-green-500 text-sm">
+                System Status: All Good
+              </span>
             </div>
           </div>
         </div>
       </div>
     </footer>
-  )
-} 
+  );
+}
