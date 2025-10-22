@@ -42,7 +42,7 @@ export default function EventRow({
 
       {/* Status */}
       <div className="col-span-2 flex items-center">
-        {campaign ? (
+        {campaign?.is_active ? (
           <span className="text-green-400 text-sm">✓ Active</span>
         ) : (
           <span className="text-gray-500 text-sm">Inactive</span>

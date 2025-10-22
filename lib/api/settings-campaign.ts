@@ -62,3 +62,13 @@ export const updateCampaign = async (
     throw error;
   }
 };
+
+// Supprimer une campagne
+export const deleteCampaign = async (campaignId: string): Promise<void> => {
+  try {
+    await axios.delete(`${API_BASE_URL}/settings-campaign/${campaignId}`);
+  } catch (error) {
+    console.error("Erreur lors de la suppression de la campagne:", error);
+    throw error;
+  }
+};

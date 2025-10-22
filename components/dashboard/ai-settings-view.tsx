@@ -6,11 +6,12 @@ import {
   SettingsCampaign,
   createCampaign,
   updateCampaign,
+  deleteCampaign,
   CreateCampaignData,
   UpdateCampaignData,
 } from "@/lib/api/settings-campaign";
 import { Organization } from "@/lib/api/organizations";
-import { EventRow, CampaignForm } from "./ai-settings";
+import { EventRow, CampaignForm, DeleteConfirmationModal } from "./ai-settings";
 
 interface AISettingsViewProps {
   organization: Organization;
@@ -34,6 +35,9 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
     null
   );
   const [editingCampaignFor, setEditingCampaignFor] = useState<string | null>(
+    null
+  );
+  const [deletingCampaignFor, setDeletingCampaignFor] = useState<string | null>(
     null
   );
 
@@ -109,11 +113,37 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
   };
 
   const handleDeleteCampaign = (eventId: string) => {
-    console.log("Suppression de campagne pour l'événement:", eventId);
+    setDeletingCampaignFor(eventId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingCampaignFor) return;
+
+    try {
+      const event = events.find((e) => e.id === deletingCampaignFor);
+      if (event?.settings_campaign) {
+        await deleteCampaign(event.settings_campaign.id);
+        setEvents(
+          events.map((e) =>
+            e.id === deletingCampaignFor
+              ? { ...e, settings_campaign: undefined }
+              : e
+          )
+        );
+        setDeletingCampaignFor(null);
+      }
+    } catch (err) {
+      console.error("Erreur lors de la suppression de la campagne:", err);
+      setError("Erreur lors de la suppression de la campagne");
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeletingCampaignFor(null);
   };
 
   return (
-    <div className="h-full pt-10 px-6">
+    <div className="h-full pt-10 px-6 pb-10">
       {loading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
@@ -159,7 +189,7 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
           </div>
 
           {/* Events List */}
-          <div className="space-y-2">
+          <div className="space-y-6">
             {events.map((event) => {
               return (
                 <div key={event.id}>
@@ -191,6 +221,22 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
             })}
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingCampaignFor && (
+        <DeleteConfirmationModal
+          isOpen={!!deletingCampaignFor}
+          onClose={handleCancelDelete}
+          onConfirm={handleConfirmDelete}
+          campaignName={
+            events.find((e) => e.id === deletingCampaignFor)?.settings_campaign
+              ?.name || ""
+          }
+          eventName={
+            events.find((e) => e.id === deletingCampaignFor)?.name || ""
+          }
+        />
       )}
     </div>
   );
