@@ -17,7 +17,7 @@ export default function DeleteConfirmationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-[#1E1E21] rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex items-center mb-4">
           <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 rounded-full flex items-center justify-center">
             <svg
@@ -40,7 +40,7 @@ export default function DeleteConfirmationModal({
           <h3 className="text-lg font-medium text-white mb-2">
             Supprimer la campagne
           </h3>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="text-sm text-[#9D9DA8] mb-6">
             Êtes-vous sûr de vouloir supprimer la campagne{" "}
             <strong className="text-white">{campaignName}</strong> pour
             l'événement <strong className="text-white">{eventName}</strong> ?
@@ -51,7 +51,7 @@ export default function DeleteConfirmationModal({
           <div className="flex space-x-3 justify-center">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[#9D9DA8] bg-[#232327] rounded-md hover:bg-[#007953]/20 transition-colors"
             >
               Annuler
             </button>

@@ -147,8 +147,8 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
       {loading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-main mx-auto mb-4"></div>
-            <p className="text-gray-400">Chargement des événements...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007953] mx-auto mb-4"></div>
+            <p className="text-[#9D9DA8]">Chargement des événements...</p>
           </div>
         </div>
       ) : error ? (
@@ -156,10 +156,10 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
           <div className="text-center">
             <div className="text-red-400 text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-bold text-white mb-2">Erreur</h1>
-            <p className="text-gray-400 mb-4">{error}</p>
+            <p className="text-[#9D9DA8] mb-4">{error}</p>
             <button
               onClick={fetchEvents}
-              className="px-4 py-2 bg-green-main text-white rounded-lg hover:bg-green-light transition-colors"
+              className="px-4 py-2 bg-[#007953] text-white rounded-lg hover:bg-[#00a86b] transition-colors"
             >
               Réessayer
             </button>
@@ -171,7 +171,7 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
             <h1 className="text-6xl font-bold text-white mb-4">
               AI Strategies
             </h1>
-            <p className="text-gray-400 text-lg mb-8">
+            <p className="text-[#9D9DA8] text-lg mb-8">
               Aucun événement trouvé pour cette organisation
             </p>
           </div>
@@ -181,7 +181,7 @@ export default function AISettingsView({ organization }: AISettingsViewProps) {
           <h1 className="text-4xl font-bold text-white mb-8">AI Strategies</h1>
 
           {/* Header */}
-          <div className="grid grid-cols-12 gap-4 mb-4 px-4 py-3 text-gray-400 text-sm font-medium">
+          <div className="grid grid-cols-12 gap-4 mb-4 px-4 py-3 text-[#9D9DA8] text-sm font-medium">
             <div className="col-span-4">Event Name</div>
             <div className="col-span-4">Campaign Name</div>
             <div className="col-span-2">Status</div>

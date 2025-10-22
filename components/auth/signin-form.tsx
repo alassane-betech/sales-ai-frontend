@@ -94,7 +94,7 @@ export default function SignInForm({
 
       {/* Email */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
           Email
         </label>
         <input
@@ -105,8 +105,8 @@ export default function SignInForm({
             if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
             if (authError) setAuthError("");
           }}
-          className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all ${
-            errors.email ? "border-red-500" : "border-white/20"
+          className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
+            errors.email ? "border-red-500" : "border-[#007953]/20"
           }`}
           placeholder="john@company.com"
         />
@@ -120,7 +120,7 @@ export default function SignInForm({
 
       {/* Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
           Password
         </label>
         <div className="relative">
@@ -133,15 +133,15 @@ export default function SignInForm({
                 setErrors((prev) => ({ ...prev, password: "" }));
               if (authError) setAuthError("");
             }}
-            className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all pr-12 ${
-              errors.password ? "border-red-500" : "border-white/20"
+            className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all pr-12 ${
+              errors.password ? "border-red-500" : "border-[#007953]/20"
             }`}
             placeholder="••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9D9DA8] hover:text-white transition-colors"
           >
             {showPassword ? (
               <EyeOff className="w-5 h-5" />
@@ -161,7 +161,7 @@ export default function SignInForm({
           <button
             type="button"
             onClick={handleOpenForgot}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="text-sm text-[#9D9DA8] hover:text-white transition-colors"
           >
             Mot de passe oublié ?
           </button>
@@ -172,7 +172,7 @@ export default function SignInForm({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 px-4 bg-gradient-to-r from-green-main to-green-light hover:from-green-dark hover:to-green-main text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        className="w-full py-3 px-4 bg-gradient-to-r from-[#007953] to-[#00a86b] hover:from-[#00a86b] hover:to-[#007953] text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
         {isLoading ? (
           <div className="flex items-center justify-center">

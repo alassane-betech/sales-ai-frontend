@@ -104,15 +104,15 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
         >
           {/* First Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
               First Name
             </label>
             <input
               type="text"
               value={formData.firstName}
               onChange={(e) => onInputChange("firstName", e.target.value)}
-              className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all ${
-                errors.firstName ? "border-red-500" : "border-white/20"
+              className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
+                errors.firstName ? "border-red-500" : "border-[#007953]/20"
               }`}
               placeholder="John"
             />
@@ -126,15 +126,15 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
 
           {/* Last Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
               Last Name
             </label>
             <input
               type="text"
               value={formData.lastName}
               onChange={(e) => onInputChange("lastName", e.target.value)}
-              className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all ${
-                errors.lastName ? "border-red-500" : "border-white/20"
+              className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
+                errors.lastName ? "border-red-500" : "border-[#007953]/20"
               }`}
               placeholder="Doe"
             />
@@ -157,8 +157,8 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
           type="email"
           value={formData.email}
           onChange={(e) => onInputChange("email", e.target.value)}
-          className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all ${
-            errors.email ? "border-red-500" : "border-white/20"
+          className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
+            errors.email ? "border-red-500" : "border-[#007953]/20"
           }`}
           placeholder="john@company.com"
         />
@@ -184,8 +184,8 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
             type="tel"
             value={formData.phone}
             onChange={(e) => onInputChange("phone", e.target.value)}
-            className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all ${
-              errors.phone ? "border-red-500" : "border-white/20"
+            className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
+              errors.phone ? "border-red-500" : "border-[#007953]/20"
             }`}
             placeholder="+1 (555) 123-4567"
           />
@@ -208,15 +208,15 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
             type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={(e) => onInputChange("password", e.target.value)}
-            className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all pr-12 ${
-              errors.password ? "border-red-500" : "border-white/20"
+            className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all pr-12 ${
+              errors.password ? "border-red-500" : "border-[#007953]/20"
             }`}
             placeholder="••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9D9DA8] hover:text-white transition-colors"
           >
             {showPassword ? (
               <EyeOff className="w-5 h-5" />
@@ -248,15 +248,17 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
               type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={(e) => onInputChange("confirmPassword", e.target.value)}
-              className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all pr-12 ${
-                errors.confirmPassword ? "border-red-500" : "border-white/20"
+              className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all pr-12 ${
+                errors.confirmPassword
+                  ? "border-red-500"
+                  : "border-[#007953]/20"
               }`}
               placeholder="••••••••"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9D9DA8] hover:text-white transition-colors"
             >
               {showConfirmPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -278,7 +280,7 @@ export default function SignUpForm({ onStartOtp }: SignUpFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 px-4 bg-gradient-to-r from-green-main to-green-light hover:from-green-dark hover:to-green-main text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        className="w-full py-3 px-4 bg-gradient-to-r from-[#007953] to-[#00a86b] hover:from-[#00a86b] hover:to-[#007953] text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
         {isLoading ? (
           <div className="flex items-center justify-center">

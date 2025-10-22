@@ -71,7 +71,7 @@ export function HeaderOrigin() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#1E1E21]/90 backdrop-blur-md border-b border-[#232327]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -83,12 +83,12 @@ export function HeaderOrigin() {
           >
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-main to-green-light rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-r from-[#007953] to-[#00a86b] rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-lg">AI</span>
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-light rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#00a86b] rounded-full animate-pulse"></div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-main to-green-light bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-[#007953] to-[#00a86b] bg-clip-text text-transparent">
                 ShowUp
               </span>
             </div>
@@ -107,7 +107,7 @@ export function HeaderOrigin() {
                         if (item.name === "Company")
                           setIsCompanyOpen(!isCompanyOpen);
                       }}
-                      className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors duration-200 font-medium py-2"
+                      className="flex items-center space-x-1 text-[#9D9DA8] hover:text-white transition-colors duration-200 font-medium py-2"
                     >
                       <span>{item.name}</span>
                       <ChevronDown
@@ -129,19 +129,19 @@ export function HeaderOrigin() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
-                          className="absolute top-full left-0 mt-2 w-64 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-xl overflow-hidden"
+                          className="absolute top-full left-0 mt-2 w-64 bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-xl shadow-xl overflow-hidden"
                         >
                           <div className="p-2">
                             {item.dropdownItems?.map((dropdownItem) => (
                               <a
                                 key={dropdownItem.name}
                                 href={dropdownItem.href}
-                                className="block px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                                className="block px-4 py-3 text-[#9D9DA8] hover:text-white hover:bg-[#232327] rounded-lg transition-all duration-200"
                               >
                                 <div className="font-medium">
                                   {dropdownItem.name}
                                 </div>
-                                <div className="text-sm text-gray-400">
+                                <div className="text-sm text-[#9D9DA8]">
                                   {dropdownItem.description}
                                 </div>
                               </a>
@@ -154,7 +154,7 @@ export function HeaderOrigin() {
                 ) : (
                   <a
                     href={item.href}
-                    className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+                    className="text-[#9D9DA8] hover:text-white transition-colors duration-200 font-medium"
                   >
                     {item.name}
                   </a>
@@ -168,7 +168,7 @@ export function HeaderOrigin() {
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-main to-green-light rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900"
+                className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#007953] to-[#00a86b] rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B]"
               >
                 <LayoutDashboard className="w-4 h-4 mr-2" />
                 Dashboard
@@ -177,13 +177,13 @@ export function HeaderOrigin() {
               <>
                 <Link
                   href="/auth?mode=signin"
-                  className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+                  className="text-[#9D9DA8] hover:text-white transition-colors duration-200 font-medium"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth?mode=signup"
-                  className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-main to-green-light rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-main focus:ring-offset-2 focus:ring-offset-dark-900"
+                  className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-[#007953] to-[#00a86b] rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B]"
                 >
                   Start Free Trial
                 </Link>
@@ -195,7 +195,7 @@ export function HeaderOrigin() {
           <div className="lg:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-white transition-colors p-2"
+              className="text-[#9D9DA8] hover:text-white transition-colors p-2"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? (
@@ -214,14 +214,14 @@ export function HeaderOrigin() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden border-t border-white/20"
+              className="lg:hidden border-t border-[#232327]"
             >
               <div className="py-4 space-y-2">
                 {navItems.map((item) => (
                   <div key={item.name}>
                     <a
                       href={item.href}
-                      className="block px-4 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                      className="block px-4 py-2 text-[#9D9DA8] hover:text-white hover:bg-[#232327] rounded-lg transition-colors duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.name}
@@ -232,7 +232,7 @@ export function HeaderOrigin() {
                           <a
                             key={dropdownItem.name}
                             href={dropdownItem.href}
-                            className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors duration-200"
+                            className="block px-4 py-2 text-sm text-[#9D9DA8] hover:text-white hover:bg-[#232327] rounded-lg transition-colors duration-200"
                             onClick={() => setIsMenuOpen(false)}
                           >
                             {dropdownItem.name}
@@ -242,11 +242,11 @@ export function HeaderOrigin() {
                     )}
                   </div>
                 ))}
-                <div className="pt-4 border-t border-white/20">
+                <div className="pt-4 border-t border-[#232327]">
                   {isLoggedIn ? (
                     <Link
                       href="/dashboard"
-                      className="block w-full px-4 py-2 text-white bg-gradient-to-r from-green-main to-green-light rounded-lg font-medium text-center"
+                      className="block w-full px-4 py-2 text-white bg-gradient-to-r from-[#007953] to-[#00a86b] rounded-lg font-medium text-center"
                     >
                       <div className="flex items-center justify-center">
                         <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -257,13 +257,13 @@ export function HeaderOrigin() {
                     <>
                       <Link
                         href="/auth?mode=signin"
-                        className="block w-full mb-2 px-4 py-2 text-gray-300 hover:text-white transition-colors duration-200"
+                        className="block w-full mb-2 px-4 py-2 text-[#9D9DA8] hover:text-white transition-colors duration-200"
                       >
                         Sign In
                       </Link>
                       <Link
                         href="/auth?mode=signup"
-                        className="block w-full px-4 py-2 text-white bg-gradient-to-r from-green-main to-green-light rounded-lg font-medium"
+                        className="block w-full px-4 py-2 text-white bg-gradient-to-r from-[#007953] to-[#00a86b] rounded-lg font-medium"
                       >
                         Start Free Trial
                       </Link>

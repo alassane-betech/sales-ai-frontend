@@ -25,7 +25,7 @@ export default function EventRow({
   onDeleteCampaign,
 }: EventRowProps) {
   return (
-    <div className="grid grid-cols-12 gap-4 bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors">
+    <div className="grid grid-cols-12 gap-4 bg-[#1E1E21] rounded-lg p-4 hover:bg-[#232327] transition-colors">
       {/* Event Name */}
       <div className="col-span-4 flex items-center">
         <span className="text-white font-medium">{event.name}</span>
@@ -34,18 +34,18 @@ export default function EventRow({
       {/* Campaign Name */}
       <div className="col-span-4 flex items-center">
         {campaign ? (
-          <span className="text-gray-300">{campaign.name}</span>
+          <span className="text-[#9D9DA8]">{campaign.name}</span>
         ) : (
-          <span className="text-gray-500 italic">Aucune campagne</span>
+          <span className="text-[#9D9DA8] italic">Aucune campagne</span>
         )}
       </div>
 
       {/* Status */}
       <div className="col-span-2 flex items-center">
         {campaign?.is_active ? (
-          <span className="text-green-400 text-sm">✓ Active</span>
+          <span className="text-[#007953] text-sm">✓ Active</span>
         ) : (
-          <span className="text-gray-500 text-sm">Inactive</span>
+          <span className="text-[#9D9DA8] text-sm">Inactive</span>
         )}
       </div>
 
@@ -55,7 +55,7 @@ export default function EventRow({
           <>
             <button
               onClick={() => onEditCampaign(event.id)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-[#9D9DA8] hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -73,7 +73,7 @@ export default function EventRow({
             </button>
             <button
               onClick={() => onDeleteCampaign(event.id)}
-              className="text-gray-400 hover:text-red-400 transition-colors"
+              className="text-[#9D9DA8] hover:text-red-400 transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -93,7 +93,7 @@ export default function EventRow({
         ) : (
           <button
             onClick={() => onCreateCampaign(event.id)}
-            className="px-3 py-1 bg-green-main text-white text-sm rounded hover:bg-green-light transition-colors"
+            className="px-3 py-1 bg-[#007953] text-white text-sm rounded hover:bg-[#00a86b] transition-colors"
           >
             Créer campagne
           </button>

@@ -49,7 +49,7 @@ export default function CampaignForm({
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 mt-4">
+    <div className="bg-[#1E1E21] rounded-lg p-6 mt-4">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white">
           {isEditing ? "Edit Strategy" : "Create Strategy"} - {eventName}
@@ -58,14 +58,14 @@ export default function CampaignForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+            className="px-4 py-2 text-[#9D9DA8] hover:text-white transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             form="campaign-form"
-            className="px-6 py-2 bg-green-main text-white rounded hover:bg-green-light transition-colors"
+            className="px-6 py-2 bg-[#007953] text-white rounded hover:bg-[#00a86b] transition-colors"
           >
             Save
           </button>
@@ -82,7 +82,7 @@ export default function CampaignForm({
           {/* Strategy Details */}
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
                 Strategy Name
               </label>
               <input
@@ -91,7 +91,7 @@ export default function CampaignForm({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-green-main"
+                className="w-full px-3 py-2 bg-[#18181B] border border-[#232327] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#007953]"
                 placeholder="Enter strategy name"
                 required
               />
@@ -104,7 +104,7 @@ export default function CampaignForm({
               <h4 className="text-lg font-semibold text-white flex items-center">
                 Prompt Editor
                 <svg
-                  className="w-4 h-4 ml-2 text-gray-400"
+                  className="w-4 h-4 ml-2 text-[#9D9DA8]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -119,7 +119,7 @@ export default function CampaignForm({
               </h4>
               <button
                 type="button"
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-[#232327] text-white rounded hover:bg-[#007953]/20 transition-colors"
               >
                 Build My Prompt
               </button>
@@ -132,7 +132,7 @@ export default function CampaignForm({
                   setFormData({ ...formData, system_prompt: e.target.value })
                 }
                 rows={8}
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-green-main resize-none"
+                className="w-full px-4 py-3 bg-[#18181B] border border-[#232327] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#007953] resize-none"
                 placeholder="Enter your AI prompt instructions..."
                 required
               />
@@ -142,7 +142,7 @@ export default function CampaignForm({
 
         {/* Right Column */}
         <div className="col-span-4">
-          <div className="bg-gray-700 rounded-lg p-4">
+          <div className="bg-[#232327] rounded-lg p-4">
             <h4 className="text-lg font-semibold text-white flex items-center mb-4">
               Adjustments
               <svg
@@ -162,7 +162,7 @@ export default function CampaignForm({
 
             {/* Delay Settings */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
                 Delay (minutes)
               </label>
               <input
@@ -174,7 +174,7 @@ export default function CampaignForm({
                     delay: parseInt(e.target.value) || 0,
                   })
                 }
-                className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white placeholder-gray-400 focus:outline-none focus:border-green-main"
+                className="w-full px-3 py-2 bg-[#18181B] border border-[#232327] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#007953]"
                 placeholder="Enter delay in minutes"
                 min="0"
                 required
@@ -183,7 +183,7 @@ export default function CampaignForm({
 
             {/* Call to Action */}
             <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-[#9D9DA8] mb-2">
                 Call to Action
               </label>
               <input
@@ -192,7 +192,7 @@ export default function CampaignForm({
                 onChange={(e) =>
                   setFormData({ ...formData, call_to_action: e.target.value })
                 }
-                className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white placeholder-gray-400 focus:outline-none focus:border-green-main"
+                className="w-full px-3 py-2 bg-[#18181B] border border-[#232327] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#007953]"
                 placeholder="Enter call to action"
                 required
               />
@@ -207,9 +207,9 @@ export default function CampaignForm({
                   onChange={(e) =>
                     setFormData({ ...formData, is_active: e.target.checked })
                   }
-                  className="w-4 h-4 text-green-main bg-gray-600 border-gray-500 rounded focus:ring-green-main focus:ring-2"
+                  className="w-4 h-4 text-[#007953] bg-[#18181B] border-[#232327] rounded focus:ring-[#007953] focus:ring-2"
                 />
-                <span className="text-sm text-gray-300">Active</span>
+                <span className="text-sm text-[#9D9DA8]">Active</span>
               </label>
             </div>
           </div>

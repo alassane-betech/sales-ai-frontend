@@ -100,10 +100,10 @@ export default function OrganizationDashboardPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-main mx-auto mb-4"></div>
-          <p className="text-gray-400">Chargement de l'organisation...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007953] mx-auto mb-4"></div>
+          <p className="text-[#9D9DA8]">Chargement de l'organisation...</p>
         </div>
       </div>
     );
@@ -111,18 +111,18 @@ export default function OrganizationDashboardPage() {
 
   if (!organization) {
     return (
-      <div className="h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-white mb-2">
             Organisation non trouvée
           </h1>
-          <p className="text-gray-400 mb-4">
+          <p className="text-[#9D9DA8] mb-4">
             Cette organisation n'existe pas ou vous n'y avez pas accès.
           </p>
           <button
             onClick={() => router.push("/dashboard/organizations")}
-            className="px-4 py-2 bg-green-main text-white rounded-lg hover:bg-green-light transition-colors"
+            className="px-4 py-2 bg-[#007953] text-white rounded-lg hover:bg-[#00a86b] transition-colors"
           >
             Retour aux organisations
           </button>
@@ -132,11 +132,11 @@ export default function OrganizationDashboardPage() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex overflow-hidden">
       {/* Sidebar - Fixed height, always visible */}
-      <div className="w-80 bg-white/5 backdrop-blur-md border-r border-white/10 flex flex-col h-screen">
+      <div className="w-80 bg-[#1E1E21] backdrop-blur-md border-r border-[#232327] flex flex-col h-screen">
         {/* Header avec info de l'organisation */}
-        <div className="p-6 border-b border-white/10">
+        <div className="p-6 border-b border-[#232327]">
           <div className="flex items-center space-x-3">
             <OrganizationSelector currentOrganization={organization} />
           </div>
@@ -155,22 +155,22 @@ export default function OrganizationDashboardPage() {
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group ${
                     isActive
-                      ? "bg-gradient-to-r from-green-main/20 to-green-light/20 border border-green-main/30 text-green-main"
-                      : "text-gray-300 hover:text-white hover:bg-white/5"
+                      ? "bg-gradient-to-r from-[#007953]/20 to-[#00a86b]/20 border border-[#007953]/30 text-[#007953]"
+                      : "text-[#9D9DA8] hover:text-white hover:bg-[#232327]"
                   }`}
                 >
                   {/* Active indicator bar */}
                   <div
                     className={`w-1 h-8 rounded-full transition-all duration-200 ${
                       isActive
-                        ? "bg-green-main"
-                        : "bg-transparent group-hover:bg-white/20"
+                        ? "bg-[#007953]"
+                        : "bg-transparent group-hover:bg-[#232327]"
                     }`}
                   />
 
                   <Icon
                     className={`w-5 h-5 ${
-                      isActive ? "text-green-main" : "text-gray-400"
+                      isActive ? "text-[#007953]" : "text-[#9D9DA8]"
                     }`}
                   />
                   <span className="font-medium">{item.label}</span>
@@ -181,7 +181,7 @@ export default function OrganizationDashboardPage() {
         </nav>
 
         {/* Logout Button */}
-        <div className="p-6 border-t border-white/10">
+        <div className="p-6 border-t border-[#232327]">
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left group text-red-400 hover:text-red-300 hover:bg-red-500/10"
