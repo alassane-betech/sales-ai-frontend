@@ -18,6 +18,7 @@ import OverviewView from "@/components/overview-view";
 import CalendarView from "@/components/dashboard/calendar-view/calendar-view";
 import MeetingsView from "@/components/meetings-view";
 import TeamView from "@/components/dashboard/team/team-view";
+import AISettingsView from "@/components/dashboard/ai-settings-view";
 import { getOrganizationById, Organization } from "@/lib/api/organizations";
 import OrganizationSelector from "@/components/organization-selector";
 
@@ -25,9 +26,11 @@ import OrganizationSelector from "@/components/organization-selector";
 const TabContent = ({
   activeTab,
   organizationId,
+  organization,
 }: {
   activeTab: string;
   organizationId: string;
+  organization: Organization;
 }) => {
   switch (activeTab) {
     case "overview":
@@ -41,22 +44,7 @@ const TabContent = ({
     case "team":
       return <TeamView organizationId={organizationId} />;
     case "ai-settings":
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <h1 className="text-6xl font-bold text-white mb-4">
-              {navigationItems.find((item) => item.id === activeTab)?.label}
-            </h1>
-            <p className="text-gray-400 text-lg">
-              Welcome to your{" "}
-              {navigationItems
-                .find((item) => item.id === activeTab)
-                ?.label.toLowerCase()}{" "}
-              dashboard
-            </p>
-          </div>
-        </div>
-      );
+      return <AISettingsView organization={organization} />;
     default:
       return <OverviewView />;
   }
@@ -215,7 +203,11 @@ export default function OrganizationDashboardPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <TabContent activeTab={activeTab} organizationId={organizationId} />
+            <TabContent
+              activeTab={activeTab}
+              organizationId={organizationId}
+              organization={organization}
+            />
           </motion.div>
         </AnimatePresence>
       </div>
