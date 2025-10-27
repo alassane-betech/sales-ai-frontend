@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +10,7 @@ import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
 import { isAuthenticated } from "@/lib/auth";
 
-export default function AuthPage() {
+function AuthContent() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") || "signin";
   const invitationToken = searchParams.get("invitation_token");
@@ -188,5 +188,19 @@ export default function AuthPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007953]"></div>
+        </div>
+      }
+    >
+      <AuthContent />
+    </Suspense>
   );
 }

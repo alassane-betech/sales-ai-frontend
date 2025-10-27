@@ -192,6 +192,11 @@ export default function LeadsView() {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
+      // Handle null/undefined values
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
       if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
@@ -429,7 +434,7 @@ export default function LeadsView() {
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                                   <span className="text-sm font-medium text-gray-700">
-                                    {lead.name?.charAt(0)}
+                                    {lead.name?.charAt(0) || "N/A"}
                                   </span>
                                 </div>
                               </div>
