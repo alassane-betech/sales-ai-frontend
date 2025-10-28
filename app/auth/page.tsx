@@ -24,6 +24,64 @@ function AuthContent() {
   // Email used for OTP and header context only
   const [otpEmail, setOtpEmail] = useState("");
 
+  // Helper functions to reduce complexity
+  const getPageTitle = () => {
+    if (showOTP) return "Verify Your Email";
+    if (isSignIn && isForgotVisible) return "Réinitialiser le mot de passe";
+    if (isSignIn) return "Welcome back";
+    return "Start your free trial";
+  };
+
+  const getPageDescription = () => {
+    if (showOTP) return `We've sent a 6-digit code to ${otpEmail}`;
+    if (isSignIn && isForgotVisible) return "Entrez votre email pour recevoir un lien de réinitialisation";
+    if (isSignIn) return "Sign in to your account to continue";
+    return "Get started with AI-powered sales automation";
+  };
+
+  const renderForm = () => {
+    if (showOTP) {
+      return (
+        <OTPVerification
+          email={otpEmail}
+          otp={otp}
+          otpError={otpError}
+          isLoading={isLoading}
+          onOtpChange={(value) => {
+            setOtp(value);
+            if (otpError) setOtpError("");
+          }}
+          onBack={() => {
+            setShowOTP(false);
+            setOtp("");
+            setOtpError("");
+          }}
+          onLoadingChange={setIsLoading}
+          onErrorChange={setOtpError}
+          invitationToken={invitationToken}
+        />
+      );
+    }
+    
+    if (isSignIn) {
+      return (
+        <SignInForm
+          onForgotVisibleChange={setIsForgotVisible}
+          invitationToken={invitationToken}
+        />
+      );
+    }
+    
+    return (
+      <SignUpForm
+        onStartOtp={(email) => {
+          setOtpEmail(email);
+          setShowOTP(true);
+        }}
+      />
+    );
+  };
+
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
     if (isAuthenticated()) {
@@ -80,13 +138,7 @@ function AuthContent() {
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-2">
-              {showOTP
-                ? "Verify Your Email"
-                : isSignIn
-                ? isForgotVisible
-                  ? "Réinitialiser le mot de passe"
-                  : "Welcome back"
-                : "Start your free trial"}
+              {getPageTitle()}
             </h1>
             {showOTP ? (
               <p className="text-[#9D9DA8]">{`We've sent a 6-digit code to ${otpEmail}`}</p>
@@ -108,40 +160,7 @@ function AuthContent() {
           </div>
 
           {/* Form or OTP */}
-          {!showOTP ? (
-            isSignIn ? (
-              <SignInForm
-                onForgotVisibleChange={setIsForgotVisible}
-                invitationToken={invitationToken}
-              />
-            ) : (
-              <SignUpForm
-                onStartOtp={(email) => {
-                  setOtpEmail(email);
-                  setShowOTP(true);
-                }}
-              />
-            )
-          ) : (
-            <OTPVerification
-              email={otpEmail}
-              otp={otp}
-              otpError={otpError}
-              isLoading={isLoading}
-              onOtpChange={(value) => {
-                setOtp(value);
-                if (otpError) setOtpError("");
-              }}
-              onBack={() => {
-                setShowOTP(false);
-                setOtp("");
-                setOtpError("");
-              }}
-              onLoadingChange={setIsLoading}
-              onErrorChange={setOtpError}
-              invitationToken={invitationToken}
-            />
-          )}
+          {renderForm()}
 
           {/* Footer */}
           <div className="mt-8 text-center">

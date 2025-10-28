@@ -9,15 +9,18 @@ import { Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = useMemo(() => {
+  const token = searchParams.get("token");
+  const access_token = searchParams.get("access_token");
+  // const t = searchParams.get("t");
+  // const token = useMemo(() => {
     // Try common param names used by backends
-    return (
-      searchParams.get("access_token") ||
-      searchParams.get("token") ||
-      searchParams.get("t") ||
-      ""
-    );
-  }, [searchParams]);
+  //   return (
+  //     searchParams.get("access_token") ||
+  //     searchParams.get("token") ||
+  //     searchParams.get("t") ||
+  //     ""
+  //   );
+  // }, [searchParams]);
 
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -28,7 +31,7 @@ function ResetPasswordContent() {
   const [success, setSuccess] = useState<string>("");
 
   const validate = (): boolean => {
-    if (!token) {
+    if (!token && !access_token) {
       setError("Lien invalide ou expiré. Demandez un nouveau lien.");
       return false;
     }
@@ -57,12 +60,13 @@ function ResetPasswordContent() {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`,
         {
-          access_token: token,
+          access_token: access_token,
           password,
         }
       );
       router.push("/auth");
     } catch (err) {
+      console.error("Password reset error:", err);
       setError(
         "Impossible de réinitialiser le mot de passe. Réessayez plus tard."
       );
@@ -140,11 +144,12 @@ function ResetPasswordContent() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 Nouveau mot de passe
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
@@ -173,11 +178,12 @@ function ResetPasswordContent() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                 Confirmer le mot de passe
               </label>
               <div className="relative">
                 <input
+                  id="confirmPassword"
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => {

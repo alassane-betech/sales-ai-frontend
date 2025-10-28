@@ -9,10 +9,10 @@ function JoinOrganizationContent() {
   const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const token = searchParams.get("invitation_token");
 
   useEffect(() => {
     const handleInvitation = async () => {
-      const token = searchParams.get("invitation_token");
       setHasToken(!!token);
 
       if (token) {
@@ -35,7 +35,7 @@ function JoinOrganizationContent() {
     };
 
     handleInvitation();
-  }, [searchParams, router]);
+  }, [token, router]);
 
   if (!hasToken) {
     return (
