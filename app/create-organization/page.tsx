@@ -63,7 +63,7 @@ export default function CreateOrganizationPage() {
                 <span className="text-white font-bold text-lg">AI</span>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-green-main to-green-light bg-clip-text text-transparent">
-                SalesAI
+                ShowUp
               </span>
             </div>
           </div>

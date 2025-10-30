@@ -95,7 +95,7 @@ export default function CreateOrganization({
           Create Your Organization
         </h2>
         <p className="text-gray-400 text-sm">
-          Set up your organization to get started with SalesAI
+          Set up your organization to get started with ShowUp
         </p>
       </div>
 

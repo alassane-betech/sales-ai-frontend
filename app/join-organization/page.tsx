@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { acceptInvitation } from "@/lib/api/invitations";
 
-function OrganizationLoader() {
+function JoinOrganizationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [hasToken, setHasToken] = useState(false);
@@ -69,8 +69,17 @@ function OrganizationLoader() {
 
 export default function JoinOrganizationPage() {
   return (
-    <Suspense>
-      <OrganizationLoader />
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-main mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement...</p>
+          </div>
+        </div>
+      }
+    >
+      <JoinOrganizationContent />
     </Suspense>
   );
 }

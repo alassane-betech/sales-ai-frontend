@@ -215,7 +215,7 @@ export default function CalendarView() {
   // If showing create event, display the CreateEventPage component
   if (showCreateEvent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 p-6">
+      <div className="h-full p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -223,11 +223,11 @@ export default function CalendarView() {
               <h1 className="text-3xl font-bold text-white">
                 Create New Event
               </h1>
-              <p className="text-gray-300">Set up your event details</p>
+              <p className="text-[#9D9DA8]">Set up your event details</p>
             </div>
             <button
               onClick={() => setShowCreateEvent(false)}
-              className="px-4 py-2 text-white bg-white/20 backdrop-blur-md border border-white/30 rounded-lg hover:bg-white/30 transition-colors flex items-center"
+              className="px-4 py-2 text-white bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-lg hover:bg-[#232327] transition-colors flex items-center"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Calendar
@@ -244,13 +244,13 @@ export default function CalendarView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 p-6">
+    <div className="h-full p-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Calendar</h1>
-            <p className="text-gray-300">
+            <p className="text-[#9D9DA8]">
               Manage your booking links, availability, and events
             </p>
           </div>
@@ -261,14 +261,14 @@ export default function CalendarView() {
                 setSelectedEventId(null);
                 setShowCreateEvent(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-600 hover:to-green-500 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
+              className="px-4 py-2 bg-gradient-to-r from-[#007953] to-[#00a86b] text-white rounded-lg hover:from-[#00a86b] hover:to-[#007953] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Event
             </button>
             <button
               onClick={() => setShowAvailabilityModal(true)}
-              className="px-4 py-2 text-gray-300 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg hover:bg-white/20 transition-colors flex items-center"
+              className="px-4 py-2 text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-lg hover:bg-[#232327] transition-colors flex items-center"
             >
               <Settings className="w-4 h-4 mr-2" />
               Set Availability
@@ -284,7 +284,7 @@ export default function CalendarView() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/5 backdrop-blur-md rounded-lg shadow-lg border border-white/10"
+          className="bg-[#1E1E21] backdrop-blur-md rounded-lg shadow-lg border border-[#232327]"
         >
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -293,7 +293,7 @@ export default function CalendarView() {
               </h2>
               <button
                 onClick={() => toggleSection("events")}
-                className="text-gray-400 hover:text-gray-300"
+                className="text-[#9D9DA8] hover:text-white"
               >
                 {expandedSections.has("events") ? (
                   <ChevronUp className="w-5 h-5" />
@@ -314,8 +314,8 @@ export default function CalendarView() {
                 >
                   {loading ? (
                     <div className="col-span-full flex items-center justify-center py-8">
-                      <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
-                      <span className="ml-2 text-gray-400">
+                      <RefreshCw className="w-6 h-6 animate-spin text-[#9D9DA8]" />
+                      <span className="ml-2 text-[#9D9DA8]">
                         Loading events...
                       </span>
                     </div>
@@ -326,8 +326,8 @@ export default function CalendarView() {
                     </div>
                   ) : events.length === 0 ? (
                     <div className="col-span-full flex items-center justify-center py-8">
-                      <Calendar className="w-6 h-6 text-gray-400" />
-                      <span className="ml-2 text-gray-400">
+                      <Calendar className="w-6 h-6 text-[#9D9DA8]" />
+                      <span className="ml-2 text-[#9D9DA8]">
                         No events found
                       </span>
                     </div>
@@ -340,7 +340,7 @@ export default function CalendarView() {
                         <motion.div
                           key={event.id}
                           whileHover={{ y: -2 }}
-                          className="border border-white/10 rounded-lg p-4 hover:bg-white/10 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white/5 h-64 flex flex-col"
+                          className="border border-[#232327] rounded-lg p-4 hover:bg-[#232327] hover:shadow-lg transition-all duration-200 cursor-pointer bg-[#1E1E21] h-64 flex flex-col"
                         >
                           <div className="flex items-start justify-between mb-3">
                             <h3 className="font-medium text-white line-clamp-2">
@@ -354,7 +354,7 @@ export default function CalendarView() {
                             </span>
                           </div>
 
-                          <div className="space-y-2 text-sm text-gray-300 flex-1">
+                          <div className="space-y-2 text-sm text-[#9D9DA8] flex-1">
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-2" />
                               Created:{" "}
@@ -376,11 +376,11 @@ export default function CalendarView() {
 
                             <div className="flex-1">
                               {event.description ? (
-                                <p className="text-gray-400 line-clamp-2">
+                                <p className="text-[#9D9DA8] line-clamp-2">
                                   {event.description}
                                 </p>
                               ) : (
-                                <p className="text-gray-400 line-clamp-2 opacity-0">
+                                <p className="text-[#9D9DA8] line-clamp-2 opacity-0">
                                   &nbsp;
                                 </p>
                               )}
@@ -392,7 +392,7 @@ export default function CalendarView() {
                               setSelectedEventId(event.id);
                               setShowCreateEvent(true);
                             }}
-                            className="mt-3 w-full px-3 py-2 text-sm bg-white/10 text-white rounded-md hover:bg-white/20 transition-colors"
+                            className="mt-3 w-full px-3 py-2 text-sm bg-[#232327] text-white rounded-md hover:bg-[#007953]/20 transition-colors"
                           >
                             View Details
                           </button>
@@ -421,7 +421,7 @@ export default function CalendarView() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-dark-800 rounded-lg shadow-xl w-full max-w-4xl border border-white/10"
+              className="bg-[#1E1E21] rounded-lg shadow-xl w-full max-w-4xl border border-[#232327]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -432,7 +432,7 @@ export default function CalendarView() {
                   </h2>
                   <button
                     onClick={() => setShowAvailabilityModal(false)}
-                    className="text-gray-400 hover:text-gray-300"
+                    className="text-[#9D9DA8] hover:text-white"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -454,13 +454,13 @@ export default function CalendarView() {
                     return (
                       <div
                         key={day}
-                        className="flex items-center space-x-4 p-3 border border-white/10 rounded-lg bg-white/5"
+                        className="flex items-center space-x-4 p-3 border border-[#232327] rounded-lg bg-[#1E1E21]"
                       >
                         {/* Toggle Switch */}
                         <button
                           onClick={() => toggleDayAvailability(day)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            config.enabled ? "bg-green-main" : "bg-white/20"
+                            config.enabled ? "bg-[#007953]" : "bg-[#232327]"
                           }`}
                         >
                           <span
@@ -494,7 +494,7 @@ export default function CalendarView() {
                                       e.target.value
                                     )
                                   }
-                                  className="px-2 py-1 border border-white/20 rounded text-sm focus:outline-none focus:ring-1 focus:ring-green-main bg-white/10 text-white"
+                                  className="px-2 py-1 border border-[#232327] rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#007953] bg-[#18181B] text-white"
                                 />
                                 <span className="text-gray-400">-</span>
                                 <input
@@ -508,14 +508,14 @@ export default function CalendarView() {
                                       e.target.value
                                     )
                                   }
-                                  className="px-2 py-1 border border-white/20 rounded text-sm focus:outline-none focus:ring-1 focus:ring-green-main bg-white/10 text-white"
+                                  className="px-2 py-1 border border-[#232327] rounded text-sm focus:outline-none focus:ring-1 focus:ring-[#007953] bg-[#18181B] text-white"
                                 />
 
                                 {/* Action Buttons */}
                                 <div className="flex items-center space-x-1">
                                   <button
                                     onClick={() => addTimeSlot(day)}
-                                    className="p-1 text-gray-400 hover:text-white rounded"
+                                    className="p-1 text-[#9D9DA8] hover:text-white rounded"
                                     title="Add time slot"
                                   >
                                     <Plus className="w-4 h-4" />
@@ -524,7 +524,7 @@ export default function CalendarView() {
                                     onClick={() =>
                                       duplicateTimeSlot(day, slotIndex)
                                     }
-                                    className="p-1 text-gray-400 hover:text-white rounded"
+                                    className="p-1 text-[#9D9DA8] hover:text-white rounded"
                                     title="Duplicate time slot"
                                   >
                                     <svg
@@ -575,10 +575,10 @@ export default function CalendarView() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-end space-x-3 pt-6 border-t border-[#232327]">
                   <button
                     onClick={() => setShowAvailabilityModal(false)}
-                    className="px-4 py-2 text-gray-300 bg-white/10 backdrop-blur-md border border-white/20 rounded-md hover:bg-white/20 transition-colors"
+                    className="px-4 py-2 text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-md hover:bg-[#232327] transition-colors"
                   >
                     Cancel
                   </button>
@@ -588,7 +588,7 @@ export default function CalendarView() {
                       console.log("Saving availability:", availability);
                       setShowAvailabilityModal(false);
                     }}
-                    className="px-4 py-2 bg-gradient-to-r from-green-main to-green-light text-white rounded-md hover:from-green-dark hover:to-green-main transition-colors"
+                    className="px-4 py-2 bg-gradient-to-r from-[#007953] to-[#00a86b] text-white rounded-md hover:from-[#00a86b] hover:to-[#007953] transition-colors"
                   >
                     Save Availability
                   </button>

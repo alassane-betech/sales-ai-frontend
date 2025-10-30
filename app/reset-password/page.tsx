@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
 
-function ResetPasswordPageContent() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -115,7 +115,7 @@ function ResetPasswordPageContent() {
                 <span className="text-white font-bold text-lg">AI</span>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-green-main to-green-light bg-clip-text text-transparent">
-                SalesAI
+                ShowUp
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">
@@ -245,12 +245,14 @@ function ResetPasswordPageContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-green-main/30 border-t-green-main rounded-full animate-spin"></div>
-      </div>
-    }>
-      <ResetPasswordPageContent />
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-main"></div>
+        </div>
+      }
+    >
+      <ResetPasswordContent />
     </Suspense>
   );
 }
