@@ -20,6 +20,9 @@ import {
   Download,
   Plus,
 } from "lucide-react";
+import { getLeadsByEvent, getLeadsByOrganization, Lead } from "@/lib/api/leads";
+import { getEventsByOrganization } from "@/lib/api/events";
+import { useParams } from "next/navigation";
 
 interface Interaction {
   id: string;
@@ -33,106 +36,24 @@ interface Interaction {
   };
 }
 
-interface Lead {
+interface Event {
   id: string;
-  org_id: string;
-  owner_id: string;
-  booking_id?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  company?: string;
-  source: "scheduler" | "whatsapp" | "email_drip" | "manual";
-  owner: { name: string; avatar: string };
-  status: "new" | "contacted" | "qualified" | "unqualified" | "nurturing";
-  lead_score: number;
-  tags: string[];
-  last_touchpoint: { date: string; channel: string } | null;
-  next_action_due: string | null;
-  interactions: Interaction[];
+  organization_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  location_type: "phone" | "google_meet" | "zoom";
+  created_by: string;
+  confirmation_redirect_url?: string;
+  internal_note?: string;
+  max_days_ahead?: number;
+  min_notice_minutes?: number;
+  duration_minutes: number;
+  slot_increment_minutes: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
-
-// Mock data
-const mockLeads: Lead[] = [
-  {
-    id: "1",
-    org_id: "org1",
-    owner_id: "user1",
-    name: "John Smith",
-    email: "john@company.com",
-    phone: "+1 (555) 123-4567",
-    company: "TechCorp Inc",
-    source: "scheduler",
-    owner: { name: "Sarah Johnson", avatar: "/avatars/sarah.jpg" },
-    status: "new",
-    lead_score: 85,
-    tags: ["enterprise", "decision-maker"],
-    last_touchpoint: { date: "2024-01-15", channel: "scheduler" },
-    next_action_due: "2024-01-20",
-    interactions: [
-      {
-        id: "int1",
-        type: "booking",
-        date: "2024-01-15",
-        details: {
-          booking: { date: "2024-01-20 10:00 AM", link: "/booking/123" },
-        },
-      },
-    ],
-  },
-  {
-    id: "2",
-    org_id: "org1",
-    owner_id: "user2",
-    name: "Maria Garcia",
-    email: "maria@startup.com",
-    phone: "+1 (555) 987-6543",
-    company: "StartupXYZ",
-    source: "whatsapp",
-    owner: { name: "Mike Chen", avatar: "/avatars/mike.jpg" },
-    status: "contacted",
-    lead_score: 72,
-    tags: ["startup", "technical"],
-    last_touchpoint: { date: "2024-01-14", channel: "whatsapp" },
-    next_action_due: "2024-01-18",
-    interactions: [
-      {
-        id: "int2",
-        type: "whatsapp",
-        date: "2024-01-14",
-        details: {
-          whatsapp: { transcript: "Hi! I'm interested in your AI solution..." },
-        },
-      },
-    ],
-  },
-  {
-    id: "3",
-    org_id: "org1",
-    owner_id: "user1",
-    name: "David Wilson",
-    email: "david@enterprise.com",
-    phone: "+1 (555) 456-7890",
-    company: "Enterprise Solutions",
-    source: "email_drip",
-    owner: { name: "Sarah Johnson", avatar: "/avatars/sarah.jpg" },
-    status: "qualified",
-    lead_score: 95,
-    tags: ["enterprise", "budget-approved"],
-    last_touchpoint: { date: "2024-01-13", channel: "email" },
-    next_action_due: "2024-01-16",
-    interactions: [
-      {
-        id: "int3",
-        type: "email",
-        date: "2024-01-13",
-        details: {
-          email: { subject: "Product Demo Request", status: "opened" },
-        },
-      },
-    ],
-  },
-];
 
 const statusConfig = {
   new: { label: "New", color: "bg-blue-100 text-blue-800", icon: Star },
@@ -166,7 +87,14 @@ const sourceConfig = {
 };
 
 export default function LeadsView() {
-  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const params = useParams();
+  const organizationId = params.organizationId as string;
+
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
@@ -178,6 +106,63 @@ export default function LeadsView() {
   const [itemsPerPage] = useState(10);
   const [selectedCard, setSelectedCard] = useState<Lead | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
+
+  // Fetch events on mount
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const eventsData = await getEventsByOrganization(organizationId);
+        setEvents(eventsData);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des événements:", err);
+        setError("Erreur lors du chargement des événements");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [organizationId]);
+
+  // Fetch leads when event is selected or organization changes
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const fetchLeads = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        let leadsData: Lead[];
+
+        if (selectedEventId) {
+          leadsData = await getLeadsByEvent(selectedEventId);
+        } else {
+          leadsData = await getLeadsByOrganization(organizationId);
+        }
+
+        setLeads(leadsData);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des leads:", err);
+        setError("Erreur lors du chargement des leads");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, [organizationId, selectedEventId]);
+
+  // Helper function to get full name
+  const getLeadName = (lead: Lead) => {
+    if (lead.nom && lead.prenom) return `${lead.prenom} ${lead.nom}`;
+    if (lead.nom) return lead.nom;
+    if (lead.prenom) return lead.prenom;
+    return "N/A";
+  };
 
   // Sorting function
   const sortLeads = (leads: Lead[]) => {
@@ -296,7 +281,7 @@ export default function LeadsView() {
     <div className="min-h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023]">
       {/* Header */}
       <div className="bg-[#1E1E21] backdrop-blur-md border-b border-[#232327] px-6 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-white">Leads</h1>
             <p className="text-[#9D9DA8]">Manage and track your sales leads</p>
@@ -344,276 +329,337 @@ export default function LeadsView() {
             </div>
           </div>
         </div>
+
+        {/* Event Selector */}
+        <div className="flex items-center space-x-4 mt-4">
+          <label className="text-sm font-medium text-[#9D9DA8]">
+            Filter by Event:
+          </label>
+          <select
+            value={selectedEventId || ""}
+            onChange={(e) => setSelectedEventId(e.target.value || null)}
+            className="bg-[#232327] border border-[#232327] rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#007953] focus:border-transparent"
+          >
+            <option value="">All Events</option>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
+            ))}
+          </select>
+          {loading && (
+            <RefreshCw className="w-4 h-4 text-[#9D9DA8] animate-spin" />
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-6">
-        <AnimatePresence mode="wait">
-          {viewMode === "table" ? (
-            <motion.div
-              key="table"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Table */}
-              <div className="bg-[#1E1E21] backdrop-blur-md rounded-lg shadow-lg border border-[#232327] overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-[#232327] border-b border-[#232327]">
-                      <tr>
-                        <th className="px-6 py-3 text-left">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedLeads.size === paginatedLeads.length &&
-                              paginatedLeads.length > 0
-                            }
-                            onChange={toggleSelectAll}
-                            className="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                          />
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Company
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Phone
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Source
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Owner
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Score
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Next Action
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-transparent divide-y divide-[#232327]">
-                      {paginatedLeads.map((lead) => (
-                        <motion.tr
-                          key={lead.id}
-                          className="hover:bg-[#232327] transition-colors cursor-pointer"
-                          onClick={() => toggleRowExpansion(lead.id)}
-                        >
-                          <td
-                            className="px-6 py-4"
-                            onClick={(e) => e.stopPropagation()}
-                          >
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && leads.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <RefreshCw className="w-8 h-8 text-[#9D9DA8] animate-spin" />
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="text-center py-12">
+            <Calendar className="w-16 h-16 text-[#9D9DA8] mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-white mb-2">
+              No leads found
+            </h3>
+            <p className="text-[#9D9DA8]">
+              {selectedEventId
+                ? "No leads found for this event."
+                : "No leads found for this organization."}
+            </p>
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {viewMode === "table" ? (
+              <motion.div
+                key="table"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Table */}
+                <div className="bg-[#1E1E21] backdrop-blur-md rounded-lg shadow-lg border border-[#232327] overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-[#232327] border-b border-[#232327]">
+                        <tr>
+                          <th className="px-6 py-3 text-left">
                             <input
                               type="checkbox"
-                              checked={selectedLeads.has(lead.id)}
-                              onChange={() => toggleSelectLead(lead.id)}
+                              checked={
+                                selectedLeads.size === paginatedLeads.length &&
+                                paginatedLeads.length > 0
+                              }
+                              onChange={toggleSelectAll}
                               className="rounded border-gray-300 text-green-600 focus:ring-green-500"
                             />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    {lead.name?.charAt(0) || "N/A"}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Company
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Phone
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Source
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Event
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Score
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Last Updated
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-[#9D9DA8] uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-transparent divide-y divide-[#232327]">
+                        {loading && paginatedLeads.length === 0 ? (
+                          <tr>
+                            <td colSpan={11} className="px-6 py-8 text-center">
+                              <RefreshCw className="w-6 h-6 text-[#9D9DA8] animate-spin mx-auto" />
+                            </td>
+                          </tr>
+                        ) : (
+                          paginatedLeads.map((lead) => (
+                            <motion.tr
+                              key={lead.id}
+                              className="hover:bg-[#232327] transition-colors cursor-pointer"
+                              onClick={() => toggleRowExpansion(lead.id)}
+                            >
+                              <td
+                                className="px-6 py-4"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={selectedLeads.has(lead.id)}
+                                  onChange={() => toggleSelectLead(lead.id)}
+                                  className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                />
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-10 w-10">
+                                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                      <span className="text-sm font-medium text-gray-700">
+                                        {getLeadName(lead).charAt(0)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-white">
+                                      {getLeadName(lead)}
+                                    </div>
+                                    <div className="text-sm text-[#9D9DA8]">
+                                      {lead.company || "—"}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-white">
+                                {lead.company || "—"}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-white">
+                                {lead.email || "—"}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-white">
+                                {lead.phone || "—"}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center">
+                                  {(() => {
+                                    const config = sourceConfig[lead.source];
+                                    if (!config) {
+                                      return (
+                                        <span className="text-sm text-white">
+                                          {lead.source || "unknown"}
+                                        </span>
+                                      );
+                                    }
+                                    const Icon = config.icon;
+                                    return (
+                                      <>
+                                        <Icon className="w-4 h-4 text-[#9D9DA8] mr-2" />
+                                        <span className="text-sm text-white">
+                                          {config.label}
+                                        </span>
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center">
+                                  <span className="text-sm text-white">
+                                    {lead.event?.name || "—"}
                                   </span>
                                 </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-white">
-                                  {lead.name}
-                                </div>
-                                <div className="text-sm text-[#9D9DA8]">
-                                  {lead.company}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-white">
-                            {lead.company}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-white">
-                            {lead.email}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-white">
-                            {lead.phone}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              {(() => {
-                                const config = sourceConfig[lead.source];
-                                const Icon = config.icon;
-                                return (
-                                  <>
-                                    <Icon className="w-4 h-4 text-[#9D9DA8] mr-2" />
-                                    <span className="text-sm text-white">
+                              </td>
+                              <td className="px-6 py-4">
+                                {(() => {
+                                  const config = statusConfig[lead.status];
+                                  if (!config) {
+                                    return (
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        {lead.status || "unknown"}
+                                      </span>
+                                    );
+                                  }
+                                  const Icon = config.icon;
+                                  return (
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}
+                                    >
+                                      <Icon className="w-3 h-3 mr-1" />
                                       {config.label}
                                     </span>
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8">
-                                <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-xs font-medium text-gray-700">
-                                    {lead.owner.name.charAt(0)}
-                                  </span>
+                                  );
+                                })()}
+                              </td>
+                              <td className="px-6 py-4">
+                                <RadialProgress score={lead.score || 0} />
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-white">
+                                  {lead.updated_at ? (
+                                    <span>
+                                      Updated •{" "}
+                                      {new Date(
+                                        lead.updated_at
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[#9D9DA8]">—</span>
+                                  )}
                                 </div>
-                              </div>
-                              <div className="ml-3">
-                                <div className="text-sm font-medium text-white">
-                                  {lead.owner.name}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
+                                    <Mail className="w-4 h-4" />
+                                  </button>
+                                  <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
+                                    <MessageCircle className="w-4 h-4" />
+                                  </button>
+                                  <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
+                                    <Calendar className="w-4 h-4" />
+                                  </button>
+                                  <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
                                 </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            {(() => {
-                              const config = statusConfig[lead.status];
-                              const Icon = config.icon;
-                              return (
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}
-                                >
-                                  <Icon className="w-3 h-3 mr-1" />
-                                  {config.label}
-                                </span>
-                              );
-                            })()}
-                          </td>
-                          <td className="px-6 py-4">
-                            <RadialProgress score={lead.lead_score} />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-white">
-                              {lead.next_action_due ? (
-                                <span>
-                                  Follow-up •{" "}
-                                  {new Date(
-                                    lead.next_action_due
-                                  ).toLocaleDateString()}
-                                </span>
-                              ) : (
-                                <span className="text-[#9D9DA8]">
-                                  No action due
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center space-x-2">
-                              <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
-                                <Mail className="w-4 h-4" />
-                              </button>
-                              <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
-                                <MessageCircle className="w-4 h-4" />
-                              </button>
-                              <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
-                                <Calendar className="w-4 h-4" />
-                              </button>
-                              <button className="p-1 text-[#9D9DA8] hover:text-white transition-colors">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                              </td>
+                            </motion.tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
 
-                {/* Pagination */}
-                <div className="bg-[#232327] backdrop-blur-md px-6 py-3 border-t border-[#232327]">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-[#9D9DA8]">
-                      Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                      {Math.min(currentPage * itemsPerPage, leads.length)} of{" "}
-                      {leads.length} results
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(1, prev - 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="px-3 py-1 text-sm text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-md hover:bg-[#232327] disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                        disabled={currentPage * itemsPerPage >= leads.length}
-                        className="px-3 py-1 text-sm text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-md hover:bg-[#232327] disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Next
-                      </button>
+                  {/* Pagination */}
+                  <div className="bg-[#232327] backdrop-blur-md px-6 py-3 border-t border-[#232327]">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-[#9D9DA8]">
+                        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                        {Math.min(currentPage * itemsPerPage, leads.length)} of{" "}
+                        {leads.length} results
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                          }
+                          disabled={currentPage === 1}
+                          className="px-3 py-1 text-sm text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-md hover:bg-[#232327] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <button
+                          onClick={() => setCurrentPage((prev) => prev + 1)}
+                          disabled={currentPage * itemsPerPage >= leads.length}
+                          className="px-3 py-1 text-sm text-[#9D9DA8] bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-md hover:bg-[#232327] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="kanban"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Kanban Board */}
-              <div className="flex space-x-6 overflow-x-auto pb-4">
-                {Object.entries(statusConfig).map(([status, config]) => (
-                  <div key={status} className="flex-shrink-0 w-80">
-                    <div className="bg-[#1E1E21] backdrop-blur-md rounded-lg shadow-lg border border-[#232327]">
-                      <div className="px-4 py-3 border-b border-[#232327]">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <config.icon className="w-4 h-4 mr-2 text-[#9D9DA8]" />
-                            <h3 className="text-sm font-medium text-white">
-                              {config.label}
-                            </h3>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="kanban"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Kanban Board */}
+                <div className="flex space-x-6 overflow-x-auto pb-4">
+                  {Object.entries(statusConfig).map(([status, config]) => (
+                    <div key={status} className="flex-shrink-0 w-80">
+                      <div className="bg-[#1E1E21] backdrop-blur-md rounded-lg shadow-lg border border-[#232327]">
+                        <div className="px-4 py-3 border-b border-[#232327]">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <config.icon className="w-4 h-4 mr-2 text-[#9D9DA8]" />
+                              <h3 className="text-sm font-medium text-white">
+                                {config.label}
+                              </h3>
+                            </div>
+                            <span className="text-sm text-[#9D9DA8]">
+                              {leadsByStatus[status as Lead["status"]]
+                                ?.length || 0}
+                            </span>
                           </div>
-                          <span className="text-sm text-[#9D9DA8]">
-                            {leadsByStatus[status as Lead["status"]]?.length ||
-                              0}
-                          </span>
                         </div>
-                      </div>
 
-                      <div className="p-4">
-                        <Reorder.Group
-                          axis="y"
-                          values={leadsByStatus[status as Lead["status"]] || []}
-                          onReorder={(newOrder) => {
-                            // Handle reordering within the same status
-                            setLeads((prev) => {
-                              const otherLeads = prev.filter(
-                                (lead) => lead.status !== status
-                              );
-                              return [...otherLeads, ...newOrder];
-                            });
-                          }}
-                          className="space-y-3"
-                        >
-                          {(leadsByStatus[status as Lead["status"]] || []).map(
-                            (lead) => (
+                        <div className="p-4">
+                          <Reorder.Group
+                            axis="y"
+                            values={
+                              leadsByStatus[status as Lead["status"]] || []
+                            }
+                            onReorder={(newOrder) => {
+                              // Handle reordering within the same status
+                              setLeads((prev) => {
+                                const otherLeads = prev.filter(
+                                  (lead) => lead.status !== status
+                                );
+                                return [...otherLeads, ...newOrder];
+                              });
+                            }}
+                            className="space-y-3"
+                          >
+                            {(
+                              leadsByStatus[status as Lead["status"]] || []
+                            ).map((lead) => (
                               <Reorder.Item
                                 key={lead.id}
                                 value={lead}
@@ -626,47 +672,42 @@ export default function LeadsView() {
                                 <div className="flex items-start justify-between mb-3">
                                   <div>
                                     <h4 className="text-sm font-medium text-white">
-                                      {lead.name}
+                                      {getLeadName(lead)}
                                     </h4>
                                     <p className="text-xs text-[#9D9DA8]">
-                                      {lead.company}
+                                      {lead.company || "—"}
                                     </p>
                                   </div>
-                                  <RadialProgress score={lead.lead_score} />
+                                  <RadialProgress score={lead.score || 0} />
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
-                                    <div className="w-6 h-6 rounded-full bg-[#232327] flex items-center justify-center mr-2">
-                                      <span className="text-xs font-medium text-white">
-                                        {lead.owner.name.charAt(0)}
-                                      </span>
-                                    </div>
                                     <span className="text-xs text-[#9D9DA8]">
-                                      {lead.owner.name}
+                                      {lead.event?.name || "—"}
                                     </span>
                                   </div>
 
-                                  {lead.next_action_due && (
+                                  {lead.updated_at && (
                                     <span className="text-xs text-blue-300 bg-blue-500/20 px-2 py-1 rounded-full">
                                       {new Date(
-                                        lead.next_action_due
+                                        lead.updated_at
                                       ).toLocaleDateString()}
                                     </span>
                                   )}
                                 </div>
                               </Reorder.Item>
-                            )
-                          )}
-                        </Reorder.Group>
+                            ))}
+                          </Reorder.Group>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Interaction History Drawer */}
@@ -703,19 +744,27 @@ export default function LeadsView() {
                 {/* Lead Info */}
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    {selectedCard.name}
+                    {getLeadName(selectedCard)}
                   </h3>
-                  <p className="text-gray-600 mb-4">{selectedCard.company}</p>
+                  <p className="text-gray-600 mb-4">
+                    {selectedCard.company || "—"}
+                  </p>
 
                   <div className="space-y-2">
                     <div className="flex items-center text-sm">
                       <Mail className="w-4 h-4 text-gray-400 mr-2" />
-                      {selectedCard.email}
+                      {selectedCard.email || "—"}
                     </div>
                     <div className="flex items-center text-sm">
                       <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                      {selectedCard.phone}
+                      {selectedCard.phone || "—"}
                     </div>
+                    {selectedCard.event && (
+                      <div className="flex items-center text-sm">
+                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                        {selectedCard.event.name}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -747,63 +796,24 @@ export default function LeadsView() {
                 {/* Interaction History */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-900 mb-3">
-                    Interaction History
+                    Lead Details
                   </h4>
                   <div className="space-y-3">
-                    {selectedCard.interactions.map((interaction) => (
-                      <div
-                        key={interaction.id}
-                        className="bg-gray-50 rounded-lg p-3"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            {interaction.type === "booking" && (
-                              <Calendar className="w-4 h-4 text-blue-500 mr-2" />
-                            )}
-                            {interaction.type === "whatsapp" && (
-                              <MessageCircle className="w-4 h-4 text-green-500 mr-2" />
-                            )}
-                            {interaction.type === "call" && (
-                              <Phone className="w-4 h-4 text-purple-500 mr-2" />
-                            )}
-                            {interaction.type === "email" && (
-                              <Mail className="w-4 h-4 text-gray-500 mr-2" />
-                            )}
-                            <span className="text-sm font-medium text-gray-900 capitalize">
-                              {interaction.type}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            {new Date(interaction.date).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        <div className="text-sm text-gray-600">
-                          {interaction.type === "booking" && (
-                            <span>
-                              Booked for {interaction.details.booking?.date}
-                            </span>
-                          )}
-                          {interaction.type === "whatsapp" && (
-                            <span>
-                              {interaction.details.whatsapp?.transcript}
-                            </span>
-                          )}
-                          {interaction.type === "call" && (
-                            <span>
-                              Call duration:{" "}
-                              {interaction.details.call?.duration}
-                            </span>
-                          )}
-                          {interaction.type === "email" && (
-                            <span>
-                              {interaction.details.email?.subject} -{" "}
-                              {interaction.details.email?.status}
-                            </span>
-                          )}
-                        </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm text-gray-600">
+                        <p>
+                          <strong>Status:</strong> {selectedCard.status}
+                        </p>
+                        <p>
+                          <strong>Source:</strong> {selectedCard.source}
+                        </p>
+                        {selectedCard.score && (
+                          <p>
+                            <strong>Score:</strong> {selectedCard.score}
+                          </p>
+                        )}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
