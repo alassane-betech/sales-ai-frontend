@@ -1,10 +1,11 @@
-# SalesAI - AI-Powered SaaS Landing Page
+# ShowUp - AI-Powered SaaS Landing Page
 
 A sleek, futuristic landing page for an AI-driven scheduling and outreach platform. Built with Next.js, TypeScript, Tailwind CSS, and Framer Motion.
 
 ## ✨ Features
 
 ### Design & UX
+
 - **Futuristic Aesthetics**: Deep charcoal base with electric blue/neon teal accents
 - **Smooth Micro-animations**: Scroll-triggered animations with spring easing
 - **Responsive Design**: Mobile-first approach with beautiful breakpoints
@@ -12,6 +13,7 @@ A sleek, futuristic landing page for an AI-driven scheduling and outreach platfo
 - **Glass Morphism**: Modern glass effects with backdrop blur
 
 ### Interactive Elements
+
 - **Animated Background**: Floating particles and gradient mesh
 - **Scroll Animations**: Elements animate as they enter the viewport
 - **Hover Effects**: Glow effects and scale transformations
@@ -19,6 +21,7 @@ A sleek, futuristic landing page for an AI-driven scheduling and outreach platfo
 - **Testimonials Carousel**: Smooth transitions between customer stories
 
 ### Performance & SEO
+
 - **Code Splitting**: Optimized bundle with lazy loading
 - **Semantic HTML**: Proper accessibility and SEO structure
 - **Meta Tags**: Open Graph and Twitter card support
@@ -27,18 +30,21 @@ A sleek, futuristic landing page for an AI-driven scheduling and outreach platfo
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd sales-ai-frontend
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -46,6 +52,7 @@ A sleek, futuristic landing page for an AI-driven scheduling and outreach platfo
    ```
 
 3. **Run the development server**
+
    ```bash
    npm run dev
    # or
@@ -90,17 +97,20 @@ sales-ai-frontend/
 ## 🎨 Design System
 
 ### Colors
+
 - **Primary**: Electric blue (#00d4ff)
 - **Accent**: Neon teal (#00f5d4)
 - **Dark**: Charcoal (#0f172a)
 - **Neon**: Purple (#a855f7), Pink (#ec4899)
 
 ### Typography
+
 - **Font**: Inter (Google Fonts)
 - **Weights**: 300, 400, 500, 600, 700, 800, 900
 - **Line Height**: Generous spacing for readability
 
 ### Spacing
+
 - **Grid**: 8px base unit
 - **Sections**: 80px vertical padding
 - **Cards**: 24px padding with rounded corners
@@ -108,12 +118,15 @@ sales-ai-frontend/
 ## 🔧 Customization
 
 ### Adding New Sections
+
 1. Create a new component in `components/`
 2. Import and add to `app/page.tsx`
 3. Add corresponding navigation link in `components/header.tsx`
 
 ### Modifying Colors
+
 Update the color palette in `tailwind.config.js`:
+
 ```javascript
 colors: {
   primary: { /* your colors */ },
@@ -123,7 +136,9 @@ colors: {
 ```
 
 ### Animation Timing
+
 Adjust animation durations in `tailwind.config.js`:
+
 ```javascript
 animation: {
   'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -141,11 +156,13 @@ animation: {
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
+
 1. Push to GitHub
 2. Connect repository to Vercel
 3. Deploy automatically
 
 ### Other Platforms
+
 ```bash
 npm run build
 npm start
@@ -172,7 +189,7 @@ MIT License - see LICENSE file for details
 
 ## 🆘 Support
 
-For support, email support@salesai.com or create an issue in this repository.
+For support, email support@showup.com or create an issue in this repository.
 
 ---
 

@@ -1,148 +1,131 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  Users, 
-  Plus, 
-  Search, 
-  Filter,
-  Info,
-  MoreVertical,
-  Edit,
-  Trash2
-} from 'lucide-react'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search, Filter, Info, MoreVertical, Edit, Trash2 } from "lucide-react";
+import AddMemberModal from "./add-member-modal";
+import TeamHeader from "./team-header";
+import TeamSummary from "./team-summary";
+import { getOrganizationMembers, TeamMember } from "@/lib/api/organizations";
 
 // Types
-interface TeamMember {
-  id: string
-  name: string
-  email: string
-  role: 'Super Admin' | 'Closer' | 'Manager' | 'Viewer'
-  availability: 'Parametré' | 'Pas encore défini' | 'Indisponible'
-  avatar?: string
-  initials: string
+interface TeamViewProps {
+  organizationId: string;
 }
-
-// Mock data
-const mockTeamMembers: TeamMember[] = [
-  {
-    id: '1',
-    name: 'Adrien Gavel',
-    email: 'gavel.adrien@gmail.com',
-    role: 'Closer',
-    availability: 'Parametré',
-    initials: 'AG'
-  },
-  {
-    id: '2',
-    name: 'Alassane Fall',
-    email: 'alassane@be-tech.co',
-    role: 'Super Admin',
-    availability: 'Parametré',
-    initials: 'AF'
-  },
-  {
-    id: '3',
-    name: 'Clement D',
-    email: 'clement@dabreteau.co',
-    role: 'Super Admin',
-    availability: 'Pas encore défini',
-    initials: 'CD'
-  },
-  {
-    id: '4',
-    name: 'Hugo Chatelain',
-    email: 'hchatelain18@gmail.com',
-    role: 'Super Admin',
-    availability: 'Pas encore défini',
-    initials: 'HC'
-  },
-  {
-    id: '5',
-    name: 'Moussa Toure',
-    email: 'moussa@be-tech.co',
-    role: 'Closer',
-    availability: 'Parametré',
-    initials: 'MT'
-  }
-]
 
 // Utility functions
-const getRoleColor = (role: TeamMember['role']) => {
+const getRoleColor = (role: TeamMember["role"]) => {
   switch (role) {
-    case 'Super Admin':
-      return 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-    case 'Closer':
-      return 'bg-green-500/20 text-green-300 border-green-500/30'
-    case 'Manager':
-      return 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-    case 'Viewer':
-      return 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    case "owner":
+      return "bg-blue-500/20 text-blue-300 border-blue-500/30";
+    case "admin":
+      return "bg-purple-500/20 text-purple-300 border-purple-500/30";
+    case "closer":
+      return "bg-green-500/20 text-green-300 border-green-500/30";
   }
-}
+};
 
-const getAvailabilityColor = (availability: TeamMember['availability']) => {
-  switch (availability) {
-    case 'Parametré':
-      return 'bg-green-500/20 text-green-300 border-green-500/30'
-    case 'Pas encore défini':
-      return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-    case 'Indisponible':
-      return 'bg-red-500/20 text-red-300 border-red-500/30'
+const getAvailabilityColor = () => {
+  return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
+};
+
+const getRoleLabel = (role: TeamMember["role"]) => {
+  switch (role) {
+    case "owner":
+      return "Owner";
+    case "admin":
+      return "Admin";
+    case "closer":
+      return "Closer";
   }
-}
+};
 
 // Components
 const Avatar = ({ initials, name }: { initials: string; name: string }) => (
   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
     {initials}
   </div>
-)
+);
 
-const RoleBadge = ({ role }: { role: TeamMember['role'] }) => (
-  <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(role)}`}>
-    {role}
+const RoleBadge = ({ role }: { role: TeamMember["role"] }) => (
+  <div
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(
+      role
+    )}`}
+  >
+    {getRoleLabel(role)}
   </div>
-)
+);
 
-const AvailabilityBadge = ({ availability }: { availability: TeamMember['availability'] }) => (
-  <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getAvailabilityColor(availability)}`}>
-    {availability}
+const AvailabilityBadge = () => (
+  <div
+    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getAvailabilityColor()}`}
+  >
+    Pas encore défini
   </div>
-)
+);
 
 // Main component
-export default function TeamView() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedRole, setSelectedRole] = useState<string>('all')
-  const [selectedAvailability, setSelectedAvailability] = useState<string>('all')
+export default function TeamView({ organizationId }: TeamViewProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string>("all");
+  const [selectedAvailability, setSelectedAvailability] =
+    useState<string>("all");
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredMembers = mockTeamMembers.filter(member => {
-    const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = selectedRole === 'all' || member.role === selectedRole
-    const matchesAvailability = selectedAvailability === 'all' || member.availability === selectedAvailability
-    
-    return matchesSearch && matchesRole && matchesAvailability
-  })
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const data = await getOrganizationMembers(organizationId);
+        setTeamMembers(data);
+      } catch (error) {
+        console.error("Error fetching team members:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTeamMembers();
+  }, [organizationId]);
+
+  const filteredMembers = teamMembers.filter((member) => {
+    const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
+    const matchesSearch =
+      fullName.includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = selectedRole === "all" || member.role === selectedRole;
+    const matchesAvailability = selectedAvailability === "all";
+
+    return matchesSearch && matchesRole && matchesAvailability;
+  });
+
+  const openAddMemberModal = () => {
+    setIsAddMemberModalOpen(true);
+  };
+
+  const closeAddMemberModal = () => {
+    setIsAddMemberModalOpen(false);
+  };
+
+  // Calculate summary data
+  const ownerCount = teamMembers.filter((m) => m.role === "owner").length;
+  const adminCount = teamMembers.filter((m) => m.role === "admin").length;
+  const closerCount = teamMembers.filter((m) => m.role === "closer").length;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-main"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Users className="w-8 h-8 text-green-main" />
-          <div>
-            <h1 className="text-3xl font-bold text-white">Team Management</h1>
-            <p className="text-gray-400">Manage your organization members and their roles</p>
-          </div>
-        </div>
-        <button className="px-4 py-2 bg-gradient-to-r from-green-main to-green-light text-white rounded-lg hover:from-green-dark hover:to-green-main transition-all duration-200 flex items-center space-x-2">
-          <Plus className="w-4 h-4" />
-          <span>Add Member</span>
-        </button>
-      </div>
+      <TeamHeader onAddMember={openAddMemberModal} />
 
       {/* Filters */}
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-4">
@@ -168,10 +151,9 @@ export default function TeamView() {
               className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-main appearance-none"
             >
               <option value="all">All Roles</option>
-              <option value="Super Admin">Super Admin</option>
-              <option value="Closer">Closer</option>
-              <option value="Manager">Manager</option>
-              <option value="Viewer">Viewer</option>
+              <option value="owner">Owner</option>
+              <option value="admin">Admin</option>
+              <option value="closer">Closer</option>
             </select>
           </div>
 
@@ -184,9 +166,7 @@ export default function TeamView() {
               className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-main appearance-none"
             >
               <option value="all">All Availability</option>
-              <option value="Parametré">Parametré</option>
               <option value="Pas encore défini">Pas encore défini</option>
-              <option value="Indisponible">Indisponible</option>
             </select>
           </div>
         </div>
@@ -224,7 +204,7 @@ export default function TeamView() {
             <tbody className="divide-y divide-white/10">
               {filteredMembers.map((member, index) => (
                 <motion.tr
-                  key={member.id}
+                  key={member.user_id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -232,8 +212,15 @@ export default function TeamView() {
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <Avatar initials={member.initials} name={member.name} />
-                      <span className="text-white font-medium">{member.name}</span>
+                      <Avatar
+                        initials={`${member.first_name.charAt(
+                          0
+                        )}${member.last_name.charAt(0)}`}
+                        name={`${member.first_name} ${member.last_name}`}
+                      />
+                      <span className="text-white font-medium">
+                        {member.first_name} {member.last_name}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -243,7 +230,7 @@ export default function TeamView() {
                     <RoleBadge role={member.role} />
                   </td>
                   <td className="px-6 py-4">
-                    <AvailabilityBadge availability={member.availability} />
+                    <AvailabilityBadge />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
@@ -267,24 +254,32 @@ export default function TeamView() {
         {/* Empty State */}
         {filteredMembers.length === 0 && (
           <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <div className="w-12 h-12 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <span className="text-white text-lg">👥</span>
+            </div>
             <p className="text-gray-400 text-lg">No members found</p>
-            <p className="text-gray-500 text-sm">Try adjusting your search or filters</p>
+            <p className="text-gray-500 text-sm">
+              Try adjusting your search or filters
+            </p>
           </div>
         )}
       </div>
 
       {/* Summary */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-lg p-4">
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <span>Showing {filteredMembers.length} of {mockTeamMembers.length} members</span>
-          <div className="flex items-center space-x-4">
-            <span>Super Admins: {mockTeamMembers.filter(m => m.role === 'Super Admin').length}</span>
-            <span>Closers: {mockTeamMembers.filter(m => m.role === 'Closer').length}</span>
-            <span>Available: {mockTeamMembers.filter(m => m.availability === 'Parametré').length}</span>
-          </div>
-        </div>
-      </div>
+      <TeamSummary
+        filteredCount={filteredMembers.length}
+        totalCount={teamMembers.length}
+        superAdminCount={ownerCount}
+        closerCount={closerCount}
+        availableCount={0}
+      />
+
+      {/* Add Member Modal */}
+      <AddMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={closeAddMemberModal}
+        organizationId={organizationId}
+      />
     </div>
-  )
-} 
+  );
+}
