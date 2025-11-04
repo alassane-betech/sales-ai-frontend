@@ -28,10 +28,12 @@ const TabContent = ({
   activeTab,
   organizationId,
   organization,
+  userId,
 }: {
   activeTab: string;
   organizationId: string;
   organization: Organization;
+  userId: string;
 }) => {
   switch (activeTab) {
     case "overview":
@@ -211,6 +213,7 @@ export default function OrganizationDashboardPage() {
               activeTab={activeTab}
               organizationId={organizationId}
               organization={organization}
+              userId={user?.id || ""}
             />
           </motion.div>
         </AnimatePresence>
