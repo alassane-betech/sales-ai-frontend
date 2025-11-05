@@ -21,16 +21,19 @@ import TeamView from "@/components/dashboard/team/team-view";
 import AISettingsView from "@/components/dashboard/ai-settings-view";
 import { getOrganizationById, Organization } from "@/lib/api/organizations";
 import OrganizationSelector from "@/components/organization-selector";
+import AvailibilityView from "./Tabs/Availibility/AvailibilityView";
 
 // Component to render the correct tab view based on activeTab
 const TabContent = ({
   activeTab,
   organizationId,
   organization,
+  userId,
 }: {
   activeTab: string;
   organizationId: string;
   organization: Organization;
+  userId: string;
 }) => {
   switch (activeTab) {
     case "overview":
@@ -43,6 +46,8 @@ const TabContent = ({
       return <MeetingsView />;
     case "team":
       return <TeamView organizationId={organizationId} />;
+    case "availability":
+      return <AvailibilityView organizationId={organizationId} userId={userId} />;
     case "ai-settings":
       return <AISettingsView organization={organization} />;
     default:
@@ -54,6 +59,7 @@ const navigationItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "calendar", label: "Calendar", icon: Calendar },
   { id: "leads", label: "Leads", icon: Users },
+  { id: "availability", label: "Availability", icon: Calendar },
   { id: "ai-settings", label: "AI Settings", icon: Settings },
   { id: "meetings", label: "Meetings", icon: Video },
   { id: "team", label: "Team", icon: UserCheck },
@@ -207,6 +213,7 @@ export default function OrganizationDashboardPage() {
               activeTab={activeTab}
               organizationId={organizationId}
               organization={organization}
+              userId={user?.id || ""}
             />
           </motion.div>
         </AnimatePresence>
