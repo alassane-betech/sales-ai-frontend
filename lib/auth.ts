@@ -1,5 +1,12 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import {
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+  VerifyOtpRequest,
+  VerifyOtpResponse,
+} from "./api/auth/models";
 
 // Configuration d'axios avec l'URL de base
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -39,29 +46,32 @@ const USER_COOKIE_OPTIONS = {
 };
 
 // Fonction de connexion
-export const login = async (
-  email: string,
-  password: string
-): Promise<LoginResponse> => {
-  try {
-    const response = await axios.post("/auth/login", {
-      email: email,
-      password: password,
-    });
+export const login = async (request: LoginRequest): Promise<LoginResponse> => {
+  const response = await axios.post("/auth/login", request);
 
+  const { access_token, refresh_token, user } = response.data;
+  Cookies.set("access_token", access_token, COOKIE_OPTIONS);
+  Cookies.set("refresh_token", refresh_token, COOKIE_OPTIONS);
+  Cookies.set("user", JSON.stringify(user), USER_COOKIE_OPTIONS);
+  return response.data as LoginResponse;
+};
+
+export const verifyOtp = async (
+  request: VerifyOtpRequest
+): Promise<VerifyOtpResponse> => {
+    const response = await axios.post("/auth/verify-otp", request);
     const { access_token, refresh_token, user } = response.data;
-
-    // Stocker les tokens dans les cookies
     Cookies.set("access_token", access_token, COOKIE_OPTIONS);
     Cookies.set("refresh_token", refresh_token, COOKIE_OPTIONS);
-
-    // Stocker les informations utilisateur dans les cookies aussi
     Cookies.set("user", JSON.stringify(user), USER_COOKIE_OPTIONS);
+    return response.data as VerifyOtpResponse;
+};
 
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+export const register = async (
+  request: RegisterRequest
+): Promise<RegisterResponse> => {
+  const response = await axios.post("/auth/register", request);
+  return response.data as RegisterResponse;
 };
 
 // Fonction de déconnexion

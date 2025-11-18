@@ -11,6 +11,7 @@ import {
   Calendar,
   Target,
   TrendingUp,
+  LogOut,
 } from "lucide-react";
 import { getUserOrganizations } from "@/lib/api/organizations";
 import { Organization } from "@/lib/api/organizations";
@@ -20,7 +21,9 @@ export default function OrganizationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
+
+  console.log('AAAAAA user', JSON.stringify(user, null, 2));
 
   useEffect(() => {
     if (authLoading) return;
@@ -45,6 +48,10 @@ export default function OrganizationsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   const handleOrganizationClick = (orgId: string) => {
@@ -126,6 +133,7 @@ export default function OrganizationsPage() {
                 Sélectionnez une organisation pour accéder à son dashboard
               </p>
             </div>
+            <div className="flex justify-end items-center space-x-2">
             <button
               onClick={handleCreateOrganization}
               className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#007953] to-[#00a86b] text-white rounded-lg hover:from-[#00a86b] hover:to-[#007953] transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -133,6 +141,14 @@ export default function OrganizationsPage() {
               <Plus className="w-5 h-5" />
               <span>Nouvelle Organisation</span>
             </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#FF0000] to-[#FF4500] text-white rounded-lg hover:from-[#FF4500] hover:to-[#FF0000] transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <LogOut className="w-5 h-5" />
+                <span>Déconnexion</span>
+              </button>
+            </div>
           </div>
 
           {/* Grille des organisations */}

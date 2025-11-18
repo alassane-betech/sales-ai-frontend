@@ -1,101 +1,97 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { useState } from "react";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
-import { useAuthForm } from "@/components/auth/auth-form-context";
-import { register } from "@/lib/auth";
-import { RegisterRequest } from "@/lib/api/auth/models";
-import { useMutation } from "@tanstack/react-query";
-interface FormData {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  confirmPassword: string;
-  showPassword: boolean;
-  showConfirmPassword: boolean;
-}
+import { useRouter } from "next/navigation";
 
-const reducer = (state: FormData, action: { field: string, value: string | boolean }) => {
-  return {
-    ...state,
-    [action.field]: action.value,
-  };
-};
-
-export default function SignUpForm() {
-  const { email, password, setEmail, setPassword, setMode } = useAuthForm();
-
-  const [formData, setFormData] = useReducer(reducer, {
+export default function Form() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    phoneNumber: "",
+    email: "",
+    phone: "",
+    password: "",
     confirmPassword: "",
-    showPassword: false,
-    showConfirmPassword: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { mutate: registerMutation, isPending: isRegistering, error: registerError } = useMutation({
-    mutationFn: (request: RegisterRequest) => register(request),
-    onSuccess: () => {
-      setMode("otp");
-    },
-    onError: (error: any) => {
-      setErrors({ ...errors, submitError: error.response.data.message });
-    },
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   const onInputChange = (field: string, value: string) => {
-    setFormData({ field, value });
-    if (errors[field]) setErrors({ ...errors, [field]: "" });
-    if (errors.submitError) setErrors({ ...errors, submitError: "" });
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (submitError) setSubmitError("");
   };
 
-  const validate = () => {
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.lastName) newErrors.lastName = "Last name is required";
-    if (!email) newErrors.email = "Email is required";
-    if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
-    if (!password) newErrors.password = "Password is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.phone) newErrors.phone = "Phone number is required";
+    if (!formData.password) newErrors.password = "Password is required";
     if (!formData.confirmPassword)
       newErrors.confirmPassword = "Please confirm your password";
     if (
-      password &&
+      formData.password &&
       formData.confirmPassword &&
-      password !== formData.confirmPassword
+      formData.password !== formData.confirmPassword
     ) {
       newErrors.confirmPassword = "Passwords do not match";
     }
-    if (password && password.length < 8) {
+    if (formData.password && formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
-    console.log('AAAAAA registering...')
-    registerMutation({
-      email,
-      password,
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      phone_number: formData.phoneNumber,
-    });
-    console.log('AAAAAA registered')
+    if (!validateForm()) return;
+    setIsLoading(true);
+    setSubmitError("");
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          email: formData.email,
+          password: formData.password,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone_number: formData.phone,
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        router.push("/otp");
+      }
+    } catch (error: any) {
+      if (error.response) {
+        setSubmitError("Registration failed. Please try again.");
+      } else if (error.request) {
+        setSubmitError("Network error. Please try again.");
+      } else {
+        setSubmitError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      {/* {submitError && (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {submitError && (
         <div className="flex items-center p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
           <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
           <span>{submitError}</span>
         </div>
-      )} */}
+      )}
       <AnimatePresence mode="wait">
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -156,12 +152,8 @@ export default function SignUpForm() {
         </label>
         <input
           type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
-            if (errors.submitError) setErrors({ ...errors, submitError: "" });
-          }}
+          value={formData.email}
+          onChange={(e) => onInputChange("email", e.target.value)}
           className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
             errors.email ? "border-red-500" : "border-[#007953]/20"
           }`}
@@ -187,17 +179,17 @@ export default function SignUpForm() {
           </label>
           <input
             type="tel"
-            value={formData.phoneNumber}
-            onChange={(e) => onInputChange("phoneNumber", e.target.value)}
+            value={formData.phone}
+            onChange={(e) => onInputChange("phone", e.target.value)}
             className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all ${
-              errors.phoneNumber ? "border-red-500" : "border-[#007953]/20"
+              errors.phone ? "border-red-500" : "border-[#007953]/20"
             }`}
             placeholder="+1 (555) 123-4567"
           />
-          {errors.phoneNumber && (
+          {errors.phone && (
             <div className="flex items-center mt-1 text-red-400 text-sm">
               <AlertCircle className="w-4 h-4 mr-1" />
-              {errors.phoneNumber}
+              {errors.phone}
             </div>
           )}
         </motion.div>
@@ -210,9 +202,9 @@ export default function SignUpForm() {
         </label>
         <div className="relative">
           <input
-            type={formData.showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            type={showPassword ? "text" : "password"}
+            value={formData.password}
+            onChange={(e) => onInputChange("password", e.target.value)}
             className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all pr-12 ${
               errors.password ? "border-red-500" : "border-[#007953]/20"
             }`}
@@ -220,10 +212,10 @@ export default function SignUpForm() {
           />
           <button
             type="button"
-            onClick={() => setFormData({ field: "showPassword", value: !formData.showPassword })}
+            onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9D9DA8] hover:text-white transition-colors"
           >
-            {formData.showPassword ? (
+            {showPassword ? (
               <EyeOff className="w-5 h-5" />
             ) : (
               <Eye className="w-5 h-5" />
@@ -250,7 +242,7 @@ export default function SignUpForm() {
           </label>
           <div className="relative">
             <input
-              type={formData.showConfirmPassword ? "text" : "password"}
+              type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={(e) => onInputChange("confirmPassword", e.target.value)}
               className={`w-full px-4 py-3 bg-[#18181B] border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007953] transition-all pr-12 ${
@@ -262,10 +254,10 @@ export default function SignUpForm() {
             />
             <button
               type="button"
-              onClick={() => setFormData({ field: "showConfirmPassword", value: !formData.showConfirmPassword })}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9D9DA8] hover:text-white transition-colors"
             >
-              {formData.showConfirmPassword ? (
+              {showConfirmPassword ? (
                 <EyeOff className="w-5 h-5" />
               ) : (
                 <Eye className="w-5 h-5" />
@@ -284,10 +276,10 @@ export default function SignUpForm() {
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isRegistering}
+        disabled={isLoading}
         className="w-full py-3 px-4 bg-gradient-to-r from-[#007953] to-[#00a86b] hover:from-[#00a86b] hover:to-[#007953] text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {isRegistering ? (
+        {isLoading ? (
           <div className="flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
             Creating account...
@@ -296,12 +288,6 @@ export default function SignUpForm() {
           "Start Free Trial"
         )}
       </button>
-      {errors.submitError && (
-        <div className="flex justify-center items-center mt-1 text-red-400 text-sm">
-          <AlertCircle className="w-4 h-4 mr-1" />
-          {errors.submitError}
-        </div>
-      )}
     </form>
   );
 }

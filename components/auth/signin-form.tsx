@@ -4,39 +4,39 @@ import { useState } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { login } from "@/lib/auth";
 import ForgotPasswordForm from "@/components/auth/forgot-password-form";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { useAuthForm } from "@/components/auth/auth-form-context";
+import { LoginRequest } from "@/lib/api/auth/models";
+import { useMutation } from "@tanstack/react-query";
 
-interface SignInFormProps {
-  onForgotVisibleChange?: (visible: boolean) => void;
-  invitationToken?: string | null;
-}
-
-export default function SignInForm({
-  onForgotVisibleChange,
-  invitationToken,
-}: SignInFormProps) {
+export default function SignInForm() {
+  const router = useRouter();
+  const { email, password, setEmail, setPassword, setMode } = useAuthForm();
   const [showPassword, setShowPassword] = useState(false);
-  const [formEmail, setFormEmail] = useState<string>("");
-  const [formPassword, setFormPassword] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string>("");
-  const [showForgot, setShowForgot] = useState(false);
-  const [resetEmail, setResetEmail] = useState<string>("");
-  // reset handled by child component
+  
+  const { mutate: loginMutation, isPending: isLoginLoading } = useMutation({
+    mutationFn: (request: LoginRequest) => login(request),
+    onSuccess: () => {
+      router.push("/dashboard");
+    },
+    onError: (error: any) => {
+      setAuthError(error.response.data.message);
+    },
+  });
 
   const handleOpenForgot = () => {
-    const next = !showForgot;
-    setShowForgot(next);
-    setResetEmail(formEmail || "");
-    if (onForgotVisibleChange) onForgotVisibleChange(next);
+    setMode("forgot-password");
   };
 
   // reset handled by child component
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formEmail) newErrors.email = "Email is required";
-    if (!formPassword) newErrors.password = "Password is required";
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -44,43 +44,9 @@ export default function SignInForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setIsLoading(true);
     setAuthError("");
-    try {
-      await login(formEmail, formPassword);
-      if (invitationToken) {
-        window.location.href = `/join-organization?invitation_token=${invitationToken}`;
-      } else {
-        window.location.href = "/dashboard";
-      }
-    } catch (error: any) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          setAuthError("Email ou mot de passe incorrect");
-        } else if (error.response.status === 400) {
-          setAuthError("Données de connexion invalides");
-        } else if (error.response.status === 500) {
-          setAuthError("Erreur serveur. Veuillez réessayer plus tard");
-        } else {
-          setAuthError("Erreur de connexion. Veuillez réessayer");
-        }
-      } else if (error.request) {
-        setAuthError(
-          "Erreur de connexion au serveur. Vérifiez votre connexion internet"
-        );
-      } else {
-        setAuthError("Une erreur inattendue s'est produite");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation({ email, password });
   };
-
-  if (showForgot) {
-    return (
-      <ForgotPasswordForm initialEmail={resetEmail} onBack={handleOpenForgot} />
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -91,6 +57,13 @@ export default function SignInForm({
           <span>{authError}</span>
         </div>
       )}
+      <AnimatePresence mode="wait">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="space-y-6"
+        >
 
       {/* Email */}
       <div>
@@ -99,9 +72,9 @@ export default function SignInForm({
         </label>
         <input
           type="email"
-          value={formEmail}
+          value={email}
           onChange={(e) => {
-            setFormEmail(e.target.value);
+            setEmail(e.target.value);
             if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
             if (authError) setAuthError("");
           }}
@@ -126,9 +99,9 @@ export default function SignInForm({
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
-            value={formPassword}
+            value={password}
             onChange={(e) => {
-              setFormPassword(e.target.value);
+              setPassword(e.target.value);
               if (errors.password)
                 setErrors((prev) => ({ ...prev, password: "" }));
               if (authError) setAuthError("");
@@ -168,13 +141,16 @@ export default function SignInForm({
         </div>
       </div>
 
+      </motion.div>
+      </AnimatePresence>
+
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoginLoading}
         className="w-full py-3 px-4 bg-gradient-to-r from-[#007953] to-[#00a86b] hover:from-[#00a86b] hover:to-[#007953] text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#007953] focus:ring-offset-2 focus:ring-offset-[#18181B] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {isLoading ? (
+        {isLoginLoading ? (
           <div className="flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
             Signing in...

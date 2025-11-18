@@ -1,84 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
-import axios from "axios";
-import Cookies from "js-cookie";
+import { useAuthForm } from "./auth-form-context";
+import { VerifyOtpRequest, VerifyOtpResponse } from "@/lib/api/auth/models";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { verifyOtp } from "@/lib/auth";
 
-interface OTPVerificationProps {
-  email: string;
-  otp: string;
-  otpError: string;
-  isLoading: boolean;
-  onOtpChange: (value: string) => void;
-  onBack: () => void;
-  onLoadingChange: (loading: boolean) => void;
-  onErrorChange: (error: string) => void;
-  invitationToken?: string | null;
-}
+export default function OTPVerification() {
+  const { email, setMode, invitationToken, reset } = useAuthForm();
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const router = useRouter();
+  const onOtpChange = (value: string) => {
+    setOtp(value);
+  };
 
-export default function OTPVerification({
-  email,
-  otp,
-  otpError,
-  isLoading,
-  onOtpChange,
-  onBack,
-  onLoadingChange,
-  onErrorChange,
-  invitationToken,
-}: OTPVerificationProps) {
+  const { mutate: verifyOtpMutation, isPending: isLoading, error: verifyOtpError } = useMutation({
+    mutationFn: (request: VerifyOtpRequest) => verifyOtp(request),
+    onSuccess: () => {
+      if (invitationToken) {
+        router.push(`/join-organization?invitation_token=${invitationToken}`);
+      } else {
+        router.push("/create-organization");
+      }
+    },
+    onError: (error: any) => {
+      setOtpError(error.response.data.message);
+    },
+  });
+
+
   const handleVerifyOTP = async () => {
-    if (!otp || otp.length !== 6) {
-      onErrorChange("Please enter a valid 6-digit OTP");
+    if (!email || !otp || otp.length !== 6) {
+      setOtpError("Please enter a valid 6-digit OTP");
       return;
     }
 
-    onLoadingChange(true);
-    onErrorChange("");
-
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/verify-otp`,
-        {
-          email: email,
-          otp: otp,
-        }
-      );
-
-      if (response.status === 200) {
-        const COOKIE_OPTIONS = {
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax" as const,
-          expires: 30, // 30 jours (1 mois)
-        };
-
-        Cookies.set("access_token", response.data.access_token, COOKIE_OPTIONS);
-        Cookies.set(
-          "refresh_token",
-          response.data.refresh_token,
-          COOKIE_OPTIONS
-        );
-        Cookies.set("user", JSON.stringify(response.data.user), COOKIE_OPTIONS);
-
-        // Redirect to create organization page
-        if (invitationToken) {
-          window.location.href = `/join-organization?invitation_token=${invitationToken}`;
-        } else {
-          window.location.href = "/create-organization";
-        }
-      }
-    } catch (error: any) {
-      if (error.response) {
-        onErrorChange("Invalid OTP. Please try again.");
-      } else if (error.request) {
-        onErrorChange("Network error. Please try again.");
-      } else {
-        onErrorChange("Something went wrong. Please try again.");
-      }
-    } finally {
-      onLoadingChange(false);
-    }
+    verifyOtpMutation({ email, otp });
   };
 
   return (
@@ -98,7 +59,6 @@ export default function OTPVerification({
             value={otp}
             onChange={(e) => {
               onOtpChange(e.target.value.replace(/\D/g, "").slice(0, 6));
-              if (otpError) onErrorChange("");
             }}
             className={`w-full px-4 py-3 bg-white/5 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-main transition-all text-center text-lg tracking-widest ${
               otpError ? "border-red-500" : "border-white/20"
@@ -133,7 +93,10 @@ export default function OTPVerification({
         <div className="text-center">
           <button
             type="button"
-            onClick={onBack}
+            onClick={() => {
+              reset();
+              setMode("signup");
+            }}
             className="text-gray-400 hover:text-white transition-colors text-sm"
           >
             Back to registration

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -9,76 +9,46 @@ import SignInForm from "@/components/auth/signin-form";
 import SignUpForm from "@/components/auth/signup-form";
 import OTPVerification from "@/components/auth/otp-verification";
 import { isAuthenticated } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { AuthFormProvider, useAuthForm } from "@/components/auth/auth-form-context";
+import ForgotPasswordForm from "@/components/auth/forgot-password-form";
 
 function AuthContent() {
-  const searchParams = useSearchParams();
-  const mode = searchParams.get("mode") || "signin";
-  const invitationToken = searchParams.get("invitation_token");
-  const [isSignIn, setIsSignIn] = useState(mode === "signin");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showOTP, setShowOTP] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [isForgotVisible, setIsForgotVisible] = useState(false);
-
-  // Email used for OTP and header context only
-  const [otpEmail, setOtpEmail] = useState("");
+  const { mode, email, setMode } = useAuthForm();
+  const isSignIn = mode === "signin";
+  const isOtp = mode === "otp";
+  const isForgotPassword = mode === "forgot-password";
 
   // Helper functions to reduce complexity
   const getPageTitle = () => {
-    if (showOTP) return "Verify Your Email";
-    if (isSignIn && isForgotVisible) return "Réinitialiser le mot de passe";
+    if (isOtp) return "Verify Your Email";
+    if (isForgotPassword) return "Réinitialiser le mot de passe";
     if (isSignIn) return "Welcome back";
     return "Start your free trial";
   };
 
-  const getPageDescription = () => {
-    if (showOTP) return `We've sent a 6-digit code to ${otpEmail}`;
-    if (isSignIn && isForgotVisible) return "Entrez votre email pour recevoir un lien de réinitialisation";
-    if (isSignIn) return "Sign in to your account to continue";
-    return "Get started with AI-powered sales automation";
-  };
-
   const renderForm = () => {
-    if (showOTP) {
+    if (isOtp) {
       return (
-        <OTPVerification
-          email={otpEmail}
-          otp={otp}
-          otpError={otpError}
-          isLoading={isLoading}
-          onOtpChange={(value) => {
-            setOtp(value);
-            if (otpError) setOtpError("");
-          }}
-          onBack={() => {
-            setShowOTP(false);
-            setOtp("");
-            setOtpError("");
-          }}
-          onLoadingChange={setIsLoading}
-          onErrorChange={setOtpError}
-          invitationToken={invitationToken}
-        />
+        <OTPVerification />
       );
     }
     
     if (isSignIn) {
       return (
         <SignInForm
-          onForgotVisibleChange={setIsForgotVisible}
-          invitationToken={invitationToken}
         />
+      );
+    }
+
+    if (isForgotPassword) {
+      return (
+        <ForgotPasswordForm />
       );
     }
     
     return (
-      <SignUpForm
-        onStartOtp={(email) => {
-          setOtpEmail(email);
-          setShowOTP(true);
-        }}
-      />
+      <SignUpForm />
     );
   };
 
@@ -89,10 +59,8 @@ function AuthContent() {
       return;
     }
 
-    setIsSignIn(mode === "signin");
     // Hide forgot password view when switching modes
-    setIsForgotVisible(false);
-  }, [mode]);
+  }, [setMode]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex items-center justify-center p-4">
@@ -111,20 +79,20 @@ function AuthContent() {
 
       <div className="w-full max-w-md relative z-10">
         {/* Back to home */}
-        <Link
+        {/* <Link
           href="/"
           className="inline-flex items-center text-[#9D9DA8] hover:text-white transition-colors mb-8"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to home
-        </Link>
+        </Link> */}
 
         {/* Auth Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-2xl p-8 shadow-xl"
+          className="bg-[#1E1E21] backdrop-blur-md border border-[#232327] rounded-2xl px-8 py-4 shadow-xl"
         >
           {/* Header */}
           <div className="text-center mb-8">
@@ -140,10 +108,10 @@ function AuthContent() {
             <h1 className="text-2xl font-bold text-white mb-2">
               {getPageTitle()}
             </h1>
-            {showOTP ? (
-              <p className="text-[#9D9DA8]">{`We've sent a 6-digit code to ${otpEmail}`}</p>
+            {isOtp ? (
+              <p className="text-[#9D9DA8]">{`We've sent a 6-digit code to ${email}`}</p>
             ) : isSignIn ? (
-              isForgotVisible ? (
+              isForgotPassword ? (
                 <p className="text-[#9D9DA8]">
                   Entrez votre email pour recevoir un lien de réinitialisation
                 </p>
@@ -168,14 +136,16 @@ function AuthContent() {
               {isSignIn
                 ? "Don't have an account? "
                 : "Already have an account? "}
-              <Link
-                href={`/auth?mode=${isSignIn ? "signup" : "signin"}${
-                  invitationToken && `&invitation_token=${invitationToken}`
-                }`}
+              <Button
+                variant="link"
+                onClick={() => {
+                  const newMode = isSignIn ? "signup" : "signin";
+                  setMode(newMode);
+                }}
                 className="text-[#007953] hover:text-[#00a86b] transition-colors font-medium"
               >
                 {isSignIn ? "Start free trial" : "Sign in"}
-              </Link>
+              </Button>
             </p>
           </div>
 
@@ -211,15 +181,12 @@ function AuthContent() {
 }
 
 export default function AuthPage() {
+  const searchParams = useSearchParams();
+  const initialMode = (searchParams.get("mode") || "signin") as "signin" | "signup";
+  
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-[#18181B] via-[#1a1a1d] to-[#202023] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007953]"></div>
-        </div>
-      }
-    >
+    <AuthFormProvider initialMode={initialMode}>
       <AuthContent />
-    </Suspense>
+    </AuthFormProvider>
   );
 }

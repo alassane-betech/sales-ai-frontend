@@ -3,17 +3,16 @@
 import { useState } from "react";
 import axios from "axios";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { useAuthForm } from "@/components/auth/auth-form-context";
 
 interface ForgotPasswordFormProps {
   initialEmail?: string;
-  onBack: () => void;
 }
 
 export default function ForgotPasswordForm({
   initialEmail = "",
-  onBack,
 }: ForgotPasswordFormProps) {
-  const [email, setEmail] = useState<string>(initialEmail);
+  const { email, setEmail } = useAuthForm();
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
@@ -79,14 +78,7 @@ export default function ForgotPasswordForm({
             </div>
           )}
         </div>
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onBack}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Retour à la connexion
-          </button>
+        <div className="flex items-center justify-end">
           <button
             type="button"
             onClick={handleRequestReset}
